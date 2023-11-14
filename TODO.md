@@ -7,6 +7,7 @@
 
 ## Soheïl Mecheloukh
 
+- [ ] commencer un fichier excel pour noté l'impact carbonne du projet
 - [ ] faire un fichier expliquant comment marche un fichier GTFS
 
 ## Luc Godin
