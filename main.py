@@ -12,3 +12,5 @@ folium.Marker([latitude, longitude], popup='Auvergne-Rhône-Alpes').add_to(ma_ca
 
 # Enregistrez la carte au format HTML
 ma_carte.save('carte_auvergne_rhone_alpes.html')
+
+#########
