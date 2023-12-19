@@ -15,6 +15,9 @@ class Routes_stops:
         """
         a remplir
         """
+        
+
+
         indexs = self.data_frame['stop_id'].str.contains('Train')
         colonnes_a_supprimer = ['stop_desc', 'zone_id','stop_url','location_type']
         return self.data_frame[indexs].drop(colonnes_a_supprimer, axis=1)
