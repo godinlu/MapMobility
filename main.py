@@ -1,6 +1,7 @@
 import folium
 import json
 from src.stops import Stops
+from src.Region import Region
 from shapely.geometry import Point, Polygon
 from scipy.spatial.distance import cdist
 import numpy as np
@@ -28,21 +29,13 @@ folium.Marker([45.75, 4.85], popup='Auvergne-Rhône-Alpes').add_to(ma_carte)
 #     folium.CircleMarker(location, radius=5, color='red', fill=True, fill_color='blue', popup=name).add_to(ma_carte)
 
 
-# Charger le fichier GeoJSON des frontières de la région
-with open('./region-auvergne-rhone-alpes.geojson') as f:
-    geojson_data = json.load(f)
-
 # Ajouter le GeoJSON à la carte pour afficher les contours de la région
-folium.GeoJson(geojson_data).add_to(ma_carte)
-#print(geojson_data['geometry']['coordinates'])
+folium.GeoJson(Region.get_geo_json()).add_to(ma_carte)
 # Créer un polygone représentant les frontières de la région Auvergne-Rhône-Alpes
-
-region_polygon = Polygon(geojson_data['geometry']['coordinates'][0])  # Assurez-vous que les coordonnées sont correctement structurées
 
 # Ajouter un cercle pour chaque arrêt de train dans la région Auvergne-Rhône-Alpes
 for index, row in stops_data.iterrows():
-    location = Point(row['stop_lon'], row['stop_lat'])
-    if region_polygon.contains(location):
+    if Region.is_in_region(row['stop_lon'], row['stop_lat']):
         name = row['stop_name']
         folium.CircleMarker([row['stop_lat'], row['stop_lon']], radius=5, color='red', fill=True, fill_color='blue', popup=name).add_to(ma_carte)
 
