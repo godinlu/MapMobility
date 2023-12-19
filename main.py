@@ -2,7 +2,10 @@ import folium
 import json
 from src.stops import Stops
 from src.Region import Region
+from src.routes_stops import Routes_stops
 from shapely.geometry import Point, Polygon
+from scipy.spatial.distance import cdist
+import numpy as np
 # Coordonnées centrales de la région Auvergne-Rhône-Alpes
 
 stops = Stops()
@@ -36,6 +39,36 @@ for index, row in stops_data.iterrows():
     if Region.is_in_region(row['stop_lon'], row['stop_lat']):
         name = row['stop_name']
         folium.CircleMarker([row['stop_lat'], row['stop_lon']], radius=5, color='red', fill=True, fill_color='blue', popup=name).add_to(ma_carte)
+
+point_specifique = np.array([[45.75, 4.85]])
+# Obtenez les coordonnées sous forme de tableau 2D pour cdist
+arrets_coord = stops_data[['stop_lat', 'stop_lon']].values
+# Calculer les distances entre le point spécifique et tous les arrêts de train
+distances = cdist(point_specifique, arrets_coord, metric='euclidean')
+
+# Trouver l'indice de la gare la plus proche
+indice_plus_proche = np.argmin(distances)
+
+# Obtenir les coordonnées de la gare la plus proche
+gare_plus_proche = arrets_coord[indice_plus_proche]
+
+# Ajouter un marqueur pour la gare la plus proche
+folium.Marker(gare_plus_proche, popup='Gare la plus proche', icon=folium.Icon(color='pink')).add_to(ma_carte)
+
+#ajout d'une route
+routes_stops = Routes_stops()
+route_id = 'FR:Line::D02BC35E-F58E-45E7-968F-42B8AB630E6E:'
+arret_route = routes_stops.get_arret_routes(route_id)
+print(arret_route)
+
+
+# Relier les arrêts par des lignes
+for i in range(len(arret_route) - 1):
+    points = [(arret_route[i]["stop_lat"], arret_route[i]["stop_lon"]),
+              (arret_route[i + 1]["stop_lat"], arret_route[i + 1]["stop_lon"])]
+    folium.PolyLine(points, color="blue", weight=2.5, opacity=1).add_to(ma_carte)
+
+
 
 # Enregistrer la carte au format HTML
 ma_carte.save('carte_auvergne_rhone_alpes.html')
