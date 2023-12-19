@@ -2,6 +2,8 @@ import folium
 import json
 from src.stops import Stops
 from shapely.geometry import Point, Polygon
+from scipy.spatial.distance import cdist
+import numpy as np
 # Coordonnées centrales de la région Auvergne-Rhône-Alpes
 
 stops = Stops()
@@ -32,7 +34,7 @@ with open('./region-auvergne-rhone-alpes.geojson') as f:
 
 # Ajouter le GeoJSON à la carte pour afficher les contours de la région
 folium.GeoJson(geojson_data).add_to(ma_carte)
-print(geojson_data['geometry']['coordinates'])
+#print(geojson_data['geometry']['coordinates'])
 # Créer un polygone représentant les frontières de la région Auvergne-Rhône-Alpes
 
 region_polygon = Polygon(geojson_data['geometry']['coordinates'][0])  # Assurez-vous que les coordonnées sont correctement structurées
@@ -44,6 +46,20 @@ for index, row in stops_data.iterrows():
         name = row['stop_name']
         folium.CircleMarker([row['stop_lat'], row['stop_lon']], radius=5, color='red', fill=True, fill_color='blue', popup=name).add_to(ma_carte)
 
+point_specifique = np.array([[45.75, 4.85]])
+# Obtenez les coordonnées sous forme de tableau 2D pour cdist
+arrets_coord = stops_data[['stop_lat', 'stop_lon']].values
+# Calculer les distances entre le point spécifique et tous les arrêts de train
+distances = cdist(point_specifique, arrets_coord, metric='euclidean')
+
+# Trouver l'indice de la gare la plus proche
+indice_plus_proche = np.argmin(distances)
+
+# Obtenir les coordonnées de la gare la plus proche
+gare_plus_proche = arrets_coord[indice_plus_proche]
+
+# Ajouter un marqueur pour la gare la plus proche
+folium.Marker(gare_plus_proche, popup='Gare la plus proche', icon=folium.Icon(color='pink')).add_to(ma_carte)
 # Enregistrer la carte au format HTML
 ma_carte.save('carte_auvergne_rhone_alpes.html')
 
