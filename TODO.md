@@ -2,18 +2,18 @@
 
 ## Tom Gaubert
 
-- [ ] commencer un fichier excel pour noté l'impact carbonne du projet
-- [ ] faire un fichier expliquant comment marche un fichier GTFS
+Obtenir les arrêts d'une route
+Obtenir les voisins d'un arrêt
 
 ## Soheïl Mecheloukh
 
-- [ ] commencer un fichier excel pour noté l'impact carbonne du projet
-- [ ] faire un fichier expliquant comment marche un fichier GTFS
+Obtenir les arrêts d'une route
+Obtenir les voisins d'un arrêt
 
 ## Luc Godin
 
-- [ ] faire une première map avec open street map en python de auvergne rhone alpes
+Fonction 2 points de vélo en essayant de prendre + d'infos
 
 ## Victor Sigrist
 
-- [ ] faire une première map avec open street map en python de auvergne rhone alpes
+
