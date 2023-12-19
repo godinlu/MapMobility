@@ -2,6 +2,7 @@ import folium
 import json
 from src.stops import Stops
 from src.Region import Region
+from src.routes_stops import Routes_stops
 from shapely.geometry import Point, Polygon
 from scipy.spatial.distance import cdist
 import numpy as np
@@ -53,6 +54,22 @@ gare_plus_proche = arrets_coord[indice_plus_proche]
 
 # Ajouter un marqueur pour la gare la plus proche
 folium.Marker(gare_plus_proche, popup='Gare la plus proche', icon=folium.Icon(color='pink')).add_to(ma_carte)
+
+#ajout d'une route
+routes_stops = Routes_stops()
+route_id = 'FR:Line::D02BC35E-F58E-45E7-968F-42B8AB630E6E:'
+arret_route = routes_stops.get_arret_routes(route_id)
+print(arret_route)
+
+
+# Relier les arrêts par des lignes
+for i in range(len(arret_route) - 1):
+    points = [(arret_route[i]["stop_lat"], arret_route[i]["stop_lon"]),
+              (arret_route[i + 1]["stop_lat"], arret_route[i + 1]["stop_lon"])]
+    folium.PolyLine(points, color="blue", weight=2.5, opacity=1).add_to(ma_carte)
+
+
+
 # Enregistrer la carte au format HTML
 ma_carte.save('carte_auvergne_rhone_alpes.html')
 
