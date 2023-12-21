@@ -2,12 +2,20 @@ import json
 from shapely.geometry import Point, Polygon
 
 class Region:
+    """
+    Cette classe sert à manager la Region auvergne rhone alpes
+    avec le geo_json 
+    """
     AURA_PATH = 'data/region-auvergne-rhone-alpes.geojson'
     _geo_gson = None
     _polygon:Polygon = None
 
     @staticmethod
     def is_in_region(lattitude:float, longitude:float)->bool:
+        """
+        Cette fonction renvoie vrai si le point est dans la region auvergne rhone alpes
+        et faux sinon
+        """
         if not Region._polygon:
             Region.open()
 
