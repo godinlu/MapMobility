@@ -1,4 +1,5 @@
 # .gitignore
 env/
 venv/
-carte_auvergne_rhone_alpes.html
+*.html
+__pycache__/
