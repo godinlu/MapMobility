@@ -115,13 +115,14 @@ for node in G.nodes():
 
 # Tracé des arêtes du graphe (itinéraires)
 for edge in G.edges():
-    print(edge)
-    gare_1 = nx.get_node_attributes(G, 'pos').get(edge[0])
-    gare_2 = nx.get_node_attributes(G, 'pos').get(edge[1])
-    print(gare_1,gare_2)
+    #print(edge)
+    gare_1 = data_frame_stop[data_frame_stop["stop_id"] == edge[0]][['stop_lat','stop_lon']].iloc[0]
+    gare_2 = data_frame_stop[data_frame_stop["stop_id"] == edge[1]][['stop_lat','stop_lon']].iloc[0]
+    #print(gare_1,gare_2)
     folium.PolyLine([(gare_1['stop_lat'], gare_1['stop_lon']), (gare_2['stop_lat'], gare_2['stop_lon'])], color="blue").add_to(ma_carte)
+
 # Fonction pour trouver un chemin entre deux gares
-"""def trouver_chemin_entre_deux_gares(gare_depart, gare_arrivee):
+def trouver_chemin_entre_deux_gares(gare_depart, gare_arrivee):
     try:
         chemin = nx.shortest_path(G, gare_depart, gare_arrivee)
         return chemin
@@ -129,14 +130,14 @@ for edge in G.edges():
         return None
 
 # Exemple d'utilisation
-gare_depart = 'StopPoint:OCETrain TER-87723197'
-gare_arrivee = 'StopPoint:OCETrain TER-87743716'
+gare_depart = 'StopPoint:OCETrain TER-87723320'
+gare_arrivee = 'StopPoint:OCETrain TER-87734475'
 
 chemin = trouver_chemin_entre_deux_gares(gare_depart, gare_arrivee)
 if chemin:
     print("Chemin trouvé :", chemin)
 else:
-    print("Aucun chemin trouvé entre ces gares.") """
+    print("Aucun chemin trouvé entre ces gares.")
 
 
 # Enregistrer la carte au format HTML
