@@ -6,6 +6,8 @@ from src.routes_stops import Routes_stops
 from shapely.geometry import Point, Polygon
 from scipy.spatial.distance import cdist
 import numpy as np
+import pandas as pd
+
 # Coordonnées centrales de la région Auvergne-Rhône-Alpes
 
 stops = Stops()
@@ -55,20 +57,28 @@ gare_plus_proche = arrets_coord[indice_plus_proche]
 # Ajouter un marqueur pour la gare la plus proche
 folium.Marker(gare_plus_proche, popup='Gare la plus proche', icon=folium.Icon(color='pink')).add_to(ma_carte)
 
-#ajout d'une route
-routes_stops = Routes_stops()
-route_id = 'FR:Line::D02BC35E-F58E-45E7-968F-42B8AB630E6E:'
-arret_route = routes_stops.get_arret_routes(route_id)
-print(arret_route)
+#ajout de toutes les routes
+data_frame_routes = pd.read_csv("data/routes.txt")
+routes_stops = Routes_stops()#instance de Routes_stops
+route_id_vect = data_frame_routes['route_id']
+arret_route_vect = {}
+
+for route_id in route_id_vect:
+    if len(routes_stops.get_arret_routes(route_id))!=0:
+        arret_route_vect[route_id] = routes_stops.get_arret_routes(route_id)
 
 
 # Relier les arrêts par des lignes
-for i in range(len(arret_route) - 1):
-    points = [(arret_route[i]["stop_lat"], arret_route[i]["stop_lon"]),
-              (arret_route[i + 1]["stop_lat"], arret_route[i + 1]["stop_lon"])]
-    folium.PolyLine(points, color="blue", weight=2.5, opacity=1).add_to(ma_carte)
+for line_id , arret_route in arret_route_vect.items():
+    for i in range(len(arret_route) - 1):
+        print(arret_route)
+        points = [(arret_route[i]["stop_lat"], arret_route[i]["stop_lon"]),
+                (arret_route[i + 1]["stop_lat"], arret_route[i + 1]["stop_lon"])]
+        folium.PolyLine(points, color="blue", weight=2.5, opacity=1).add_to(ma_carte)
 
-
+#calcule du premier trajet qui relie 2 gares
+id_gare_1 = "StopPoint:OCETrain TER-87723320"#venissieux
+id_gare_2 = "StopPoint:OCETrain TER-87734475"
 
 # Enregistrer la carte au format HTML
 ma_carte.save('carte_auvergne_rhone_alpes.html')

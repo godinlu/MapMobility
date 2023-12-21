@@ -23,7 +23,7 @@ class Routes_stops:
         
         for stop_ide in stop_ides:
             stop_data = self.data_frame_stop[self.data_frame_stop["stop_id"] == stop_ide][['stop_id','stop_lat', 'stop_lon']]
-            if Region.is_in_region(stop_data['stop_lon'], stop_data['stop_lat']):
+            if Region.is_in_region(stop_data['stop_lat'], stop_data['stop_lon']):
                 stop_dict = stop_data.set_index('stop_id').to_dict(orient='index')
                 stops.append(stop_dict[stop_ide])
 
