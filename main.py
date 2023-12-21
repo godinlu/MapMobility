@@ -1,6 +1,7 @@
 import folium
 import json
 from src.stops import Stops
+from src.utils import heures_en_secondes
 from src.region import Region
 from src.routes_stops import Routes_stops
 from shapely.geometry import Point, Polygon
@@ -9,7 +10,8 @@ import numpy as np
 import pandas as pd
 from src.routes import Routes
 import networkx as nx
-
+from tqdm import tqdm
+from functools import lru_cache
 # Coordonnées centrales de la région Auvergne-Rhône-Alpes
 
 stops = Stops()
@@ -96,6 +98,7 @@ id_gare_2 = "StopPoint:OCETrain TER-87734475"
 # Construction d'un graphe à partir des données
 G = nx.Graph()
 
+
 def temps_gare(gare_1_id,gare_2_id):
     trips_1 = data_frame_stop_time[data_frame_stop_time['stop_id']==gare_1_id]['trip_id']
     trips_2 = data_frame_stop_time[data_frame_stop_time['stop_id']==gare_2_id]['trip_id']
@@ -104,26 +107,24 @@ def temps_gare(gare_1_id,gare_2_id):
     temps_gare_1 =np.array([])
     temps_gare_2 =np.array([])
     for i in range(len(trips_communs) - 1):
-        temps_gare_1 = np.append(temps_gare_1,data_frame_stop_time[(data_frame_stop_time['trip_id'] == trips_communs[i]) & (data_frame_stop_time['stop_id'] == gare_1_id)]['arrival_time'].iloc[0])
-        temps_gare_2 = np.append(temps_gare_2,data_frame_stop_time[(data_frame_stop_time['trip_id'] == trips_communs[i]) & (data_frame_stop_time['stop_id'] == gare_2_id)]['departure_time'].iloc[0])
+        temps_gare_1 = np.append(temps_gare_1,heures_en_secondes(data_frame_stop_time[(data_frame_stop_time['trip_id'] == trips_communs[i]) & (data_frame_stop_time['stop_id'] == gare_1_id)]['arrival_time'].iloc[0]))
+        temps_gare_2 = np.append(temps_gare_2,heures_en_secondes(data_frame_stop_time[(data_frame_stop_time['trip_id'] == trips_communs[i]) & (data_frame_stop_time['stop_id'] == gare_2_id)]['departure_time'].iloc[0]))
     
-    print(temps_gare_1)
-    print(temps_gare_2)
+
     temps_entre_gares = abs(temps_gare_1-temps_gare_2)
     temps_moyen = temps_entre_gares.mean()
 
     return temps_moyen
 
 # Ajout des gares en tant que nœuds et création des arêtes pour chaque ligne
-for ligne, gares in arret_route_vect.items():
+for ligne, gares in tqdm(arret_route_vect.items()):
     for i in range(len(gares) - 1):
         #print(gares)
         gare_actuelle = gares[i]['stop_id']
-        print(gare_actuelle)
         prochaine_gare = gares[i + 1]['stop_id']
         
         #print(prochaine_gare)
-        G.add_edge(gare_actuelle, prochaine_gare,weight=temps_gare(gare_actuelle,prochaine_gare))
+        G.add_edge(gare_actuelle, prochaine_gare)
 
 
 data_frame_stop= pd.read_csv("data/stops.txt")
