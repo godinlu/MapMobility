@@ -1,5 +1,5 @@
 import pandas as pd
-from .Region import Region
+from .region import Region
 from .stops import Stops
 
 class Routes_stops:

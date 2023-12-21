@@ -7,7 +7,7 @@ class Region:
     _polygon:Polygon = None
 
     @staticmethod
-    def is_in_region(longitude:float, lattitude:float)->bool:
+    def is_in_region(lattitude:float, longitude:float)->bool:
         if not Region._polygon:
             Region.open()
 

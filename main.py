@@ -1,7 +1,7 @@
 import folium
 import json
 from src.stops import Stops
-from src.Region import Region
+from src.region import Region
 from src.routes_stops import Routes_stops
 from shapely.geometry import Point, Polygon
 from scipy.spatial.distance import cdist
