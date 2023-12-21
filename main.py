@@ -7,6 +7,8 @@ from shapely.geometry import Point, Polygon
 from scipy.spatial.distance import cdist
 import numpy as np
 import pandas as pd
+from src.routes import Routes
+import networkx as nx
 
 # Coordonnées centrales de la région Auvergne-Rhône-Alpes
 
@@ -24,7 +26,7 @@ stops_data = stops.get_locations_train()
 ma_carte = folium.Map(location=[45.75, 4.85], zoom_start=7)
 
 # Ajouter un marqueur pour indiquer le centre
-folium.Marker([45.75, 4.85], popup='Auvergne-Rhône-Alpes').add_to(ma_carte)
+#folium.Marker([45.75, 4.85], popup='Auvergne-Rhône-Alpes').add_to(ma_carte)
 # Ajouter un marqueur pour chaque point
 # for point in points:
 #     name = point["name"]
@@ -38,9 +40,9 @@ folium.GeoJson(Region.get_geo_json()).add_to(ma_carte)
 
 # Ajouter un cercle pour chaque arrêt de train dans la région Auvergne-Rhône-Alpes
 for index, row in stops_data.iterrows():
-    if Region.is_in_region(row['stop_lon'], row['stop_lat']):
+    if Region.is_in_region(row['stop_lat'], row['stop_lon']):
         name = row['stop_name']
-        folium.CircleMarker([row['stop_lat'], row['stop_lon']], radius=5, color='red', fill=True, fill_color='blue', popup=name).add_to(ma_carte)
+        #folium.CircleMarker([row['stop_lat'], row['stop_lon']], radius=5, color='red', fill=True, fill_color='blue', popup=name).add_to(ma_carte)
 
 point_specifique = np.array([[45.75, 4.85]])
 # Obtenez les coordonnées sous forme de tableau 2D pour cdist
@@ -55,30 +57,87 @@ indice_plus_proche = np.argmin(distances)
 gare_plus_proche = arrets_coord[indice_plus_proche]
 
 # Ajouter un marqueur pour la gare la plus proche
-folium.Marker(gare_plus_proche, popup='Gare la plus proche', icon=folium.Icon(color='pink')).add_to(ma_carte)
+#folium.Marker(gare_plus_proche, popup='Gare la plus proche', icon=folium.Icon(color='pink')).add_to(ma_carte)
 
 #ajout de toutes les routes
+
 data_frame_routes = pd.read_csv("data/routes.txt")
 routes_stops = Routes_stops()#instance de Routes_stops
-route_id_vect = data_frame_routes['route_id']
+route_id_vect = Routes.get_train_id()['route_id']#train
+#route_id_vect = data_frame_routes['route_id']#train + car
 arret_route_vect = {}
 
 for route_id in route_id_vect:
     if len(routes_stops.get_arret_routes(route_id))!=0:
         arret_route_vect[route_id] = routes_stops.get_arret_routes(route_id)
 
+#print(arret_route_vect)
 
 # Relier les arrêts par des lignes
 for line_id , arret_route in arret_route_vect.items():
     for i in range(len(arret_route) - 1):
-        print(arret_route)
+        #print(arret_route)
         points = [(arret_route[i]["stop_lat"], arret_route[i]["stop_lon"]),
                 (arret_route[i + 1]["stop_lat"], arret_route[i + 1]["stop_lon"])]
-        folium.PolyLine(points, color="blue", weight=2.5, opacity=1).add_to(ma_carte)
+        #folium.PolyLine(points, color="blue", weight=2.5, opacity=1).add_to(ma_carte)
+
+
+#trouve les gares dans le graphe principal
+
+
 
 #calcule du premier trajet qui relie 2 gares
 id_gare_1 = "StopPoint:OCETrain TER-87723320"#venissieux
 id_gare_2 = "StopPoint:OCETrain TER-87734475"
+
+
+# Construction d'un graphe à partir des données
+G = nx.Graph()
+
+# Ajout des gares en tant que nœuds et création des arêtes pour chaque ligne
+for ligne, gares in arret_route_vect.items():
+    for i in range(len(gares) - 1):
+        #print(gares)
+        gare_actuelle = gares[i]['stop_id']
+        #print(gare_actuelle)
+        prochaine_gare = gares[i + 1]['stop_id']
+        #print(prochaine_gare)
+        G.add_edge(gare_actuelle, prochaine_gare)
+
+
+data_frame_stop= pd.read_csv("data/stops.txt")
+# Ajout des gares à la carte
+for node in G.nodes():
+    #print(node)
+    gare = data_frame_stop[data_frame_stop["stop_id"] == node][['stop_lat','stop_lon']].iloc[0]
+    #print(gare)
+    folium.CircleMarker([gare['stop_lat'], gare['stop_lon']], radius=5, color='red', fill=True, fill_color='blue', popup=node).add_to(ma_carte)
+
+# Tracé des arêtes du graphe (itinéraires)
+for edge in G.edges():
+    print(edge)
+    gare_1 = nx.get_node_attributes(G, 'pos').get(edge[0])
+    gare_2 = nx.get_node_attributes(G, 'pos').get(edge[1])
+    print(gare_1,gare_2)
+    folium.PolyLine([(gare_1['stop_lat'], gare_1['stop_lon']), (gare_2['stop_lat'], gare_2['stop_lon'])], color="blue").add_to(ma_carte)
+# Fonction pour trouver un chemin entre deux gares
+"""def trouver_chemin_entre_deux_gares(gare_depart, gare_arrivee):
+    try:
+        chemin = nx.shortest_path(G, gare_depart, gare_arrivee)
+        return chemin
+    except nx.NetworkXNoPath:
+        return None
+
+# Exemple d'utilisation
+gare_depart = 'StopPoint:OCETrain TER-87723197'
+gare_arrivee = 'StopPoint:OCETrain TER-87743716'
+
+chemin = trouver_chemin_entre_deux_gares(gare_depart, gare_arrivee)
+if chemin:
+    print("Chemin trouvé :", chemin)
+else:
+    print("Aucun chemin trouvé entre ces gares.") """
+
 
 # Enregistrer la carte au format HTML
 ma_carte.save('carte_auvergne_rhone_alpes.html')
