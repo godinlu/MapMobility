@@ -12,11 +12,10 @@
 
 ## Luc Godin
 
-- faire une class qui récupère l'id de toutes les routes qui sont des trains.
-
 ## Victor Sigrist
 
 ## tâches faites
 
 - Obtenir les arrêts d'une route
 - Fonction 2 points de vélo en essayant de prendre + d'infos
+- faire une class qui récupère l'id de toutes les routes qui sont des trains.
