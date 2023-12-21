@@ -15,7 +15,8 @@ class Routes_stops:
 
     def get_arret_routes(self,self_route_id)->dict:
         """
-        a remplir
+        Cette fonction renvoit les arrets d'une route. 
+        Elle renvoit un dictionnaire qui contient le stop_id, la stop_lat et la stop_lon pour chaque arrêt de la ligne.
         """
         trip_ide = self.data_frame_trips[self.data_frame_trips["route_id"] == self_route_id]['trip_id'].iloc[0]
         stop_ides = self.data_frame_stop_time[self.data_frame_stop_time["trip_id"] == trip_ide]['stop_id']
