@@ -68,10 +68,6 @@ for route_id in route_id_vect:
         arret_route_vect[route_id] = routes_stops.get_arret_routes(route_id)
 
 
-
-
-
-
 # Relier les arrêts par des lignes
 for line_id , arret_route in arret_route_vect.items():
     for i in range(len(arret_route) - 1):
