@@ -27,6 +27,14 @@ def haversine_distance(lat1, lon1, lat2, lon2):
 
     return distance
 
+def heures_en_secondes(heure_str:str, sep:str=':')->int:
+    """
+    Cette fonction prend une heure par exemple '20:10:12' en entré 
+    et renvoie l'équivalent en seconde
+    """
+    heures, minutes, secondes = map(int, heure_str.split(sep))
+    return heures * 3600 + minutes * 60 + secondes
+
 def get_bike_time(location1, location2)->int:
         """
         cette fonction prend 2 point sur la carte un point est représenté en [lattitude, longitude]

@@ -1,39 +1,30 @@
 import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
+from tqdm import tqdm
+from .utils import heures_en_secondes
 
 class TrainGraph:
     def __init__(self, df_stops_times:pd.DataFrame) -> None:
         self.graph = nx.MultiDiGraph()
 
-        # for nom_gare in df_stops_times.drop_duplicates(subset='stop_id')['stop_id']:
-        #     self.graph.add_node(nom_gare)
-        trip_ids = df_stops_times.drop_duplicates(subset='trip_id')['trip_id']
-        for trip_id in trip_ids:
-            ligne = df_stops_times[df_stops_times['trip_id'] == trip_id]
+        for _, trip in tqdm(df_stops_times.groupby('trip_id'), desc="Processing trips"):
 
-            for i in range(len(ligne)):
-                print(ligne.iloc[i])
+            for i in range(len(trip) - 1):
+                first_stop = trip.iloc[i]
+                next_stop = trip.iloc[i+1]
+                time_difference = heures_en_secondes(next_stop['arrival_time']) -  heures_en_secondes(first_stop['departure_time'])
+                self.graph.add_edge(first_stop['stop_id'], next_stop['stop_id'], weight=time_difference)
 
+        
+    def get_shortest_path(self, id_stop_start:str, id_stop_end:str)->int:
+        """
+        Cette fonction renvoie le temps en seconde du plus cours chemin entre 2 stop
+        """
+        shortest_path = nx.shortest_path(self.graph, id_stop_start, id_stop_end)
+        cumulative_weight = sum(self.graph[shortest_path[i]][shortest_path[i+1]][0]['weight'] for i in range(len(shortest_path)-1))
+        return cumulative_weight
 
-        # for _, row in df_stops_times.iterrows():
-        #     trip_id, arrival_time, departure_time, stop_id, stop_sequence = row[['trip_id', 'arrival_time', 'departure_time', 'stop_id', 'stop_sequence']]
-
-        #     # Ajouter les nœuds (gares) au graphe
-        #     if not self.graph.has_node(stop_id):
-        #         self.graph.add_node(stop_id)
-            
-        #     # Ajouter les arêtes (lignes) au graphe avec le temps comme poids
-        #     time_difference = pd.to_datetime(departure_time) - pd.to_datetime(arrival_time)
-        #     print(time_difference.total_seconds())
-
-        #     if self.graph.has_edge(stop_id, trip_id):
-        #         # Si l'arête existe déjà, mettez à jour le poids avec le temps de trajet minimum
-        #         current_weight = self.graph[stop_id][trip_id]['weight']
-        #         new_weight = min(current_weight, time_difference.total_seconds())
-        #         self.graph[stop_id][trip_id]['weight'] = new_weight
-        #     else:
-        #         self.graph.add_edge(stop_id, trip_id, weight=time_difference.total_seconds())
 
     def show(self)->None:
         # Visualisation du graphe
