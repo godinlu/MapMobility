@@ -1,6 +1,7 @@
 import folium
 import json
 from src.stops import Stops
+from src.utils import heures_en_secondes
 from src.region import Region
 from src.routes_stops import Routes_stops
 from shapely.geometry import Point, Polygon
@@ -9,7 +10,8 @@ import numpy as np
 import pandas as pd
 from src.routes import Routes
 import networkx as nx
-
+from tqdm import tqdm
+from functools import lru_cache
 # Coordonnées centrales de la région Auvergne-Rhône-Alpes
 
 stops = Stops()
@@ -62,6 +64,8 @@ gare_plus_proche = arrets_coord[indice_plus_proche]
 #ajout de toutes les routes
 
 data_frame_routes = pd.read_csv("data/routes.txt")
+data_frame_stop_time = pd.read_csv("data/stop_times.txt")
+data_frame_trip = pd.read_csv("data/trips.txt")
 routes_stops = Routes_stops()#instance de Routes_stops
 route_id_vect = Routes.get_train_id()['route_id']#train
 #route_id_vect = data_frame_routes['route_id']#train + car
@@ -94,13 +98,31 @@ id_gare_2 = "StopPoint:OCETrain TER-87734475"
 # Construction d'un graphe à partir des données
 G = nx.Graph()
 
+
+def temps_gare(gare_1_id,gare_2_id):
+    trips_1 = data_frame_stop_time[data_frame_stop_time['stop_id']==gare_1_id]['trip_id']
+    trips_2 = data_frame_stop_time[data_frame_stop_time['stop_id']==gare_2_id]['trip_id']
+     # Récupération des trips communs entre les deux gares
+    trips_communs = pd.merge(trips_1, trips_2, on='trip_id')['trip_id']
+    temps_gare_1 =np.array([])
+    temps_gare_2 =np.array([])
+    for i in range(len(trips_communs) - 1):
+        temps_gare_1 = np.append(temps_gare_1,heures_en_secondes(data_frame_stop_time[(data_frame_stop_time['trip_id'] == trips_communs[i]) & (data_frame_stop_time['stop_id'] == gare_1_id)]['arrival_time'].iloc[0]))
+        temps_gare_2 = np.append(temps_gare_2,heures_en_secondes(data_frame_stop_time[(data_frame_stop_time['trip_id'] == trips_communs[i]) & (data_frame_stop_time['stop_id'] == gare_2_id)]['departure_time'].iloc[0]))
+    
+
+    temps_entre_gares = abs(temps_gare_1-temps_gare_2)
+    temps_moyen = temps_entre_gares.mean()
+
+    return temps_moyen
+
 # Ajout des gares en tant que nœuds et création des arêtes pour chaque ligne
-for ligne, gares in arret_route_vect.items():
+for ligne, gares in tqdm(arret_route_vect.items()):
     for i in range(len(gares) - 1):
         #print(gares)
         gare_actuelle = gares[i]['stop_id']
-        #print(gare_actuelle)
         prochaine_gare = gares[i + 1]['stop_id']
+        
         #print(prochaine_gare)
         G.add_edge(gare_actuelle, prochaine_gare)
 
@@ -130,8 +152,8 @@ def trouver_chemin_entre_deux_gares(gare_depart, gare_arrivee):
         return None
 
 # Exemple d'utilisation
-gare_depart = 'StopPoint:OCETrain TER-87723320'
-gare_arrivee = 'StopPoint:OCETrain TER-87734475'
+gare_depart = 'StopPoint:OCETrain TER-87726802'
+gare_arrivee = 'StopPoint:OCETrain TER-87747006'
 
 chemin = trouver_chemin_entre_deux_gares(gare_depart, gare_arrivee)
 if chemin:
@@ -139,7 +161,13 @@ if chemin:
 else:
     print("Aucun chemin trouvé entre ces gares.")
 
-
+for i in range(len(chemin) - 1):
+    gare_1 = data_frame_stop[data_frame_stop["stop_id"] == chemin[i]][['stop_lat', 'stop_lon']].iloc[0]
+    gare_2 = data_frame_stop[data_frame_stop["stop_id"] == chemin[i + 1]][['stop_lat', 'stop_lon']].iloc[0]
+    
+    folium.PolyLine([(gare_1['stop_lat'], gare_1['stop_lon']), 
+                     (gare_2['stop_lat'], gare_2['stop_lon'])], color="green").add_to(ma_carte)
+    
 # Enregistrer la carte au format HTML
 ma_carte.save('carte_auvergne_rhone_alpes.html')
 
