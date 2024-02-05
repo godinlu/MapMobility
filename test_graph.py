@@ -12,5 +12,8 @@ gare_1 = 'StopPoint:OCETrain TER-87726802'
 gare_2 = 'StopPoint:OCETrain TER-87747006'
 
 
-print(train_graph.get_shortest_path(gare_1, gare_2)/60)
+print(train_graph.get_time_between(gare_1, gare_2)/60)
+
+print(train_graph.get_dijkstra(gare_1))
+
 #train_graph.show()
