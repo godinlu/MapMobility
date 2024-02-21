@@ -10,6 +10,7 @@ class TrainGraph:
         Lorsque l'on créer 
         """
         self.graph = nx.MultiDiGraph()
+        self.graph2 = nx.MultiDiGraph()
 
         for _, trip in tqdm(df_stops_times.groupby('trip_id'), desc="Processing trips"):
 
@@ -18,6 +19,28 @@ class TrainGraph:
                 next_stop = trip.iloc[i+1]
                 time_difference = heures_en_secondes(next_stop['arrival_time']) -  heures_en_secondes(first_stop['departure_time'])
                 self.graph.add_edge(first_stop['stop_id'], next_stop['stop_id'], weight=time_difference)
+        
+        #on récupère pour chaque sommet le nombre de voisins
+        for node in self.graph.nodes():
+            buffer = [] #le buffer sert à mémoriser chaque sommets qui représente la même gare
+            for neighbors in self.graph.successors(node):
+                edge_data = self.graph.get_edge_data(node, neighbors)
+
+                self.graph2.add_edge(
+                    node + '|' + neighbors,
+                    neighbors + '|' + node, 
+                    weight=edge_data[0]['weight'])
+                
+                #ici cette boucle sert à ajouter des arrêtes entre tous les sommets réprésentant une seule gare
+                for station in buffer:
+                    self.graph2.add_edge(
+                    node + '|' + neighbors,
+                    station, 
+                    weight=0)
+                
+                buffer.append(node + '|' + neighbors)
+                
+                
 
     def get_shortest_path(self, id_stop_start:str, id_stop_end:str)->list:
         """
