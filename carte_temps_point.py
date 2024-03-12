@@ -20,14 +20,12 @@ with open('./data/region-auvergne-rhone-alpes.geojson') as f:
 zone_gpd = gpd.read_file("./data/region-auvergne-rhone-alpes.geojson")
 folium.GeoJson(geojson_data).add_to(carte)
 
-stops = Stops()
-stops_data = stops.get_locations_train()
+
 stops = Stops()
 stops_data = stops.get_locations_train()
 for index, row in stops_data.iterrows():
-    if Region.is_in_region(row['stop_lat'], row['stop_lon']):
-        name = row['stop_name']
-        folium.CircleMarker([row['stop_lat'], row['stop_lon']], radius=5, color='red', fill=True, fill_color='blue', popup=name).add_to(carte)
+    name = row['stop_name']
+    folium.CircleMarker([row['stop_lat'], row['stop_lon']], radius=5, color='red', fill=True, fill_color='blue', popup=name).add_to(carte)
 
 
 data = pd.read_csv('./data/Distances_points_gares.csv')
@@ -37,11 +35,13 @@ point = (44.95526070591957,2.1090463874917345)
 points_gares = list(zip(stops_data['stop_lat'], stops_data['stop_lon']))
 kdtree_328 = KDTree(points_gares)
 distpoint, garepoint = kdtree_328.query(point)
-print(garepoint)
-data['distpoint'] = None
+stops_data.index = range(len(stops_data))
+garepoint = stops_data['stop_id'][int(garepoint)]
+
+data['tps'] = None
 for index, row in data.iterrows():
-    chemin = trouver_chemin_entre_deux_gares(row['indexgare'],garepoint) #il faut modifier dans distance sauvegarde pour avoir l'index general et pas l'index dans seulement rhone alpes
+    chemin = trouver_chemin_entre_deux_gares(row['indexgare'],garepoint) 
     if (chemin):
-        row['distpoint'] = distpoint + dist_chem + row['distance'] #a modifier pour avoir la distance du chemin 
+        row['tempspoint'] = distpoint + dist_chem + row['distance'] #a modifier pour avoir la distance du chemin 
     else:   
         x = 0#je sais pas encore

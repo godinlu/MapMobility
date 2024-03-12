@@ -29,10 +29,11 @@ region_polygon = unary_union(region_polygon.simplify(tolerance=0.001))
 
 stops = Stops()
 stops_data = stops.get_locations_train()
+"""""
 for index, row in stops_data.iterrows():
     if  not (Region.is_in_region(row['stop_lat'], row['stop_lon'])) :
         stops_data.drop(index,inplace=True)
-
+"""
 
 """ def mindist(lat,long):
     mindist = 100000
@@ -56,11 +57,12 @@ for x in tqdm(arraylong):
             liste_points.append((y,x))
 
 
-print(len(liste_points))
+
 points_gares = list(zip(stops_data['stop_lat'], stops_data['stop_lon']))
+stops_data.index = range(len(stops_data))
 kdtree_328 = KDTree(points_gares)
 distances, indices = kdtree_328.query(np.array(liste_points))
-res =  [(a, b, c, d) for (a, b), c, d in zip(liste_points, distances, indices)]
+res =  [(a, b, c, stops_data['stop_id'][int(d)]) for (a, b), c, d in zip(liste_points, distances, indices)]
 resdf = pd.DataFrame(   res,columns=['lat','long','distance','indexgare'])
 resdf.to_csv('./data/Distances_points_gares.csv',index=False)
 
