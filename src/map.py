@@ -1,4 +1,5 @@
 import folium
+from tqdm import tqdm
 from src.data import Data
 from src.train_graph import TrainGraph
 
@@ -25,7 +26,9 @@ class Map:
         train_graph = TrainGraph()
         stops = self._data.get_stops()
 
-        for edge in train_graph.graph.edges():
+        print
+
+        for edge in tqdm(train_graph.graph.edges(), desc = "adding edge in the map"):
             gare_a = stops[stops["stop_id"] == edge[0]].iloc[0]
             gare_b = stops[stops["stop_id"] == edge[1]].iloc[0]
             folium.PolyLine([(gare_a['stop_lat'], gare_a['stop_lon']), (gare_b['stop_lat'], gare_b['stop_lon'])], color="blue").add_to(self.carte)
