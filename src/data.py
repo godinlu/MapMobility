@@ -1,4 +1,7 @@
 import pandas as pd
+import json
+from shapely.geometry import Point, Polygon
+import geopandas as gpd
 
 class Data:
     """
@@ -23,6 +26,28 @@ class Data:
         self._calendar_dates = pd.read_csv("data/calendar_dates.txt")
         self._routes = pd.read_csv("data/routes.txt")
 
+        self._region_aura = gpd.read_file("data/region-auvergne-rhone-alpes.geojson")
+
+        self.preprocess_data()
+
+    def preprocess_data(self) -> None:
+        """
+        cette fonction enlèves les données superflue comme les bus et
+        garde que les points de auvergne rhone alpes
+        """
+        #on commence par garder que les gare de trains
+        self._stops = self._stops[self._stops['stop_id'].str.contains('Train')]
+
+        #ensuite on garde que les gare qui sont dans auvergne rhâne alpes
+        gdf_stops = gpd.GeoDataFrame(self._stops, geometry=gpd.points_from_xy(self._stops['stop_lon'], self._stops['stop_lat']))
+        mask = gdf_stops.within(self._region_aura.geometry.unary_union)
+        self._stops = self._stops[mask]
+
+        #puis on garde que les trajet qui passent par les gares selectionné précédemment
+        self._stop_times = self._stop_times[self._stop_times['stop_id'].isin(self._stops['stop_id'])]
+
+
+
     def get_stops(self) -> pd.DataFrame:
         return self._stops
     
@@ -37,3 +62,6 @@ class Data:
     
     def get_routes(self) -> pd.DataFrame:
         return self._routes
+    
+    def get_aura(self) -> any:
+        return self._region_aura

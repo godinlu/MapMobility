@@ -6,7 +6,7 @@ from .utils import heures_en_secondes
 from .data import Data
 
 class TrainGraph:
-    def __init__(self, df_stops_times:pd.DataFrame) -> None:
+    def __init__(self) -> None:
         """
         Lorsque l'on créer 
         """

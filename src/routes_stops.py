@@ -1,5 +1,4 @@
 import pandas as pd
-from .region import Region
 from .stops import Stops
 from .data import Data
 

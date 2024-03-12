@@ -3,6 +3,7 @@ import pandas as pd
 from src.utils import get_bike_time
 from src.routes_stops import Routes_stops
 from src.data import Data
+from src.map import Map
 import geopandas as gpd
 from shapely.geometry import Point
 
@@ -26,14 +27,10 @@ def test_graph() :
 
 
 def test_map():
-    routes_stops = Routes_stops()
-    route_id = 'FR:Line::05C666F4-3B26-4DB6-A4A8-F3C6D6150B76:'
-    print(routes_stops.get_arret_routes(route_id))
-
-    coord1 = (45.77671, 3.08819)  # Coordonnées de Paris, France
-    coord2 = (44.19582, 5.72788)  # Coordonnées de Londres, Royaume-Uni
-    print(get_bike_time(coord1, coord2) /60)
-    #aura.save()
+    map = Map()
+    map.add_gare()
+    map.add_trajet()
+    map.save()
 
 def test_data():
     data = Data.get_instance()
@@ -57,4 +54,4 @@ def point_dans_region_auvergne_rhone_alpes(latitude, longitude, fichier_geojson)
 
 
 if __name__ == "__main__":
-    test_graph()
+    test_map()
