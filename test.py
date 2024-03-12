@@ -2,6 +2,8 @@ from src.train_graph import TrainGraph
 import pandas as pd
 from src.utils import get_bike_time
 from src.routes_stops import Routes_stops
+import geopandas as gpd
+from shapely.geometry import Point
 
 def test_graph() :
 
@@ -31,3 +33,17 @@ def test_map():
     coord2 = (44.19582, 5.72788)  # Coordonnées de Londres, Royaume-Uni
     print(get_bike_time(coord1, coord2) /60)
     #aura.save()
+
+
+## test Loc
+def point_dans_region_auvergne_rhone_alpes(latitude, longitude, fichier_geojson):
+    # Charger le fichier GeoJSON de la région Auvergne-Rhône-Alpes
+    region_auvergne_rhone_alpes = gpd.read_file(fichier_geojson)
+
+    # Créer un objet Point avec les coordonnées du point
+    point = Point(longitude, latitude)
+
+    # Vérifier si le point est à l'intérieur de la région Auvergne-Rhône-Alpes
+    est_dans_region = point.within(region_auvergne_rhone_alpes.geometry.iloc[0])
+
+    return est_dans_region
