@@ -8,7 +8,7 @@ class Data:
     _instance = None
 
     @staticmethod
-    def get_instance()->None:
+    def get_instance():
         if Data._instance is None:
             Data._instance = Data()
         return Data._instance

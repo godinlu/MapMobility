@@ -1,17 +1,20 @@
 import pandas as pd
 from .region import Region
 from .stops import Stops
+from .data import Data
 
 class Routes_stops:
     """
     a remplir
     """
-    def __init__(self, stop_path:str="data/stops.txt", stop_time_path:str="data/stop_times.txt",
-                 trips_path:str="data/trips.txt", routes_path:str="data/routes.txt",) -> None:
-        self.data_frame_stop = pd.read_csv(stop_path)
-        self.data_frame_stop_time = pd.read_csv(stop_time_path)
-        self.data_frame_trips = pd.read_csv(trips_path)
-        self.data_frame_routes = pd.read_csv(routes_path)
+    def __init__(self) -> None:
+        
+        data = Data.get_instance()
+        self.data_frame_stop = data.get_stops() 
+        self.data_frame_stop_time = data.get_stops_times() 
+        self.data_frame_trips = data.get_trips()
+        self.data_frame_routes = data.get_routes()
+
 
     def get_arret_routes(self,self_route_id)->dict:
         """
