@@ -1,9 +1,11 @@
-import pandas as pd
+
+
 import networkx as nx
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from .utils import heures_en_secondes
 from .data import Data
+from datetime import datetime
 
 class TrainGraph:
     def __init__(self) -> None:
@@ -28,16 +30,27 @@ class TrainGraph:
         """
         return nx.shortest_path(self.graph, id_stop_start, id_stop_end)
         
-    def get_time_between(self, id_stop_start:str, id_stop_end:str)->int:
+    def get_time_between(self, id_stop_start:str, id_stop_end:str, date:datetime)->int:
         """
         Cette fonction renvoie le temps en seconde du plus cours chemin entre 2 stop
         """
         shortest_path = self.get_shortest_path(id_stop_start, id_stop_end)
-        cumulative_weight = sum(self.graph[shortest_path[i]][shortest_path[i+1]][0]['weight'] for i in range(len(shortest_path)-1))
-        return cumulative_weight
+        print(shortest_path)
+        stop_times = Data.get_instance().get_stops_times()
+
+        #on fait un premier filtre pour garder que les lignes avec les arrêts concerné
+        stop_times = stop_times[stop_times['stop_id'].isin(shortest_path)]
+
+        #
+        stop_times = stop_times[
+            stop_times['trip_id'].apply(lambda x: datetime.fromisoformat(x.split(':')[1]).weekday()) == date.weekday()
+        ]
+        
+        print(stop_times)
     
     def get_dijkstra(self, id_source_stop:str):
         return nx.single_source_dijkstra_path_length(self.graph, id_source_stop, weight='weight')
+    
 
 
 

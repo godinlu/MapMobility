@@ -1,29 +1,32 @@
-from src.train_graph import TrainGraph
+#from src.train_graph import TrainGraph
+from src.train_graph_V2 import TrainGraph
+
+
 import pandas as pd
 from src.utils import get_bike_time
-from src.routes_stops import Routes_stops
 from src.data import Data
 from src.map import Map
+from datetime import datetime
 import geopandas as gpd
 from shapely.geometry import Point
 
 def test_graph() :
-
-
-    stop_times = pd.read_csv('data/stop_times.txt')
-    stop_times = stop_times[stop_times['stop_id'].str.contains('Train')]
-    train_graph = TrainGraph(stop_times)
-
-    print(train_graph.graph)
+    train_graph = TrainGraph()
 
 
     gare_1 = 'StopPoint:OCETrain TER-87726802'
     gare_2 = 'StopPoint:OCETrain TER-87747006'
 
+
+
     #print(train_graph.get_time_between(gare_1, gare_2)/60)
     #print(train_graph.get_dijkstra(gare_1))
-    print(train_graph.get_shortest_path(gare_1, gare_2))
+    print(train_graph.get_time_between(gare_1, gare_2, datetime(2024, 4, 2)))
     #train_graph.show()
+
+def test_graph_v2() :
+    train_graph = TrainGraph('StopPoint:OCETrain TER-87726802', datetime(2024,4,2,18,0,0))
+
 
 
 def test_map():
@@ -54,4 +57,4 @@ def point_dans_region_auvergne_rhone_alpes(latitude, longitude, fichier_geojson)
 
 
 if __name__ == "__main__":
-    test_map()
+    test_graph_v2()
