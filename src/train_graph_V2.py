@@ -1,6 +1,6 @@
 from .data import Data
 import pandas as pd
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 
 class TrainGraph:
     def __init__(self, gare_id:str, date:datetime) -> None:
@@ -10,9 +10,33 @@ class TrainGraph:
             self.df_stops_times['trip_id'].apply(lambda x: datetime.fromisoformat(x.split(':')[1]).weekday()) == date.weekday()
         ]
 
-        #self.df_stops_times = 
+        self.df_stops_times['date'] = self.df_stops_times['trip_id'].str.split(':').str[1].str[:-3]
+        self.df_stops_times['departure_time'] = self.df_stops_times['date'] + ':' + self.df_stops_times['departure_time']
+        self.df_stops_times['arrival_time'] = self.df_stops_times['date'] + ':' + self.df_stops_times['arrival_time']
+        self.df_stops_times.drop(columns=['date'], inplace=True)
 
-        self.propagation(gare_id, date)
+        for i, row in self.df_stops_times.iterrows():
+            arr_hour = int(row['arrival_time'][11:13])
+            if(arr_hour > 23):
+                arrival_time = self.df_stops_times.at[i,'arrival_time']
+                new_arrival_time = arrival_time[:11] + str(arr_hour - 24) + arrival_time[13:]
+                self.df_stops_times.at[i,'arrival_time'] = new_arrival_time
+                date = datetime.fromisoformat(self.df_stops_times['arrival_time']) + timedelta(days=1)
+                self.df_stops_times.at[i,'arrival_time'] = date.strftime('%Y-%m-%d:%H:%M:%S')
+
+            dep_hour = int(row['departure_time'][11:13])
+            if(dep_hour > 23):
+                departure_time = self.df_stops_times.at[i,'departure_time']
+                new_departure_time = departure_time[:11] + str(arr_hour - 24) + departure_time[13:]
+                self.df_stops_times.at[i,'departure_time'] = new_departure_time
+                date = datetime.fromisoformat(self.df_stops_times['departure_time']) + timedelta(days=1)
+                self.df_stops_times.at[i,'departure_time'] = date.strftime('%Y-%m-%d:%H:%M:%S')
+
+
+        print(self.df_stops_times)
+        #self.propagation(gare_id, date)
+
+        print(TrainGraph.to_datetime('2024-03-12:24:13:00'))
 
 
 
@@ -46,7 +70,8 @@ class TrainGraph:
         print(index)
 
 
-    def to_datetime(string:str) -> datetime:
-
-
-
+    @staticmethod
+    def to_datetime(date_str):
+        # Convertir la chaîne de caractères en objet datetime
+        if int(date_str[11:13]) > 23:
+            date_str[11:13]
