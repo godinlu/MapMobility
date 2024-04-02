@@ -12,6 +12,7 @@ from scipy.spatial import KDTree
 from src.region import Region
 from shapely.ops import unary_union
 from main import trouver_chemin_entre_deux_gares
+import os
 
 centre = [45.75, 4.85]
 carte = folium.Map(location=centre, zoom_start=7)
@@ -45,3 +46,5 @@ for index, row in data.iterrows():
         row['tempspoint'] = distpoint + dist_chem + row['distance'] #a modifier pour avoir la distance du chemin 
     else:   
         x = 0#je sais pas encore
+
+
