@@ -5,38 +5,33 @@ from datetime import datetime, time, timedelta
 class TrainGraph:
     def __init__(self, gare_id:str, date:datetime) -> None:
         self.list_gare = {}
+        self.iter = 0
         self.df_stops_times = Data.get_instance().get_stops_times()
+
+        #on commence par conserver seulement les trip qui correspondent au jour de la semaine
         self.df_stops_times = self.df_stops_times[
             self.df_stops_times['trip_id'].apply(lambda x: datetime.fromisoformat(x.split(':')[1]).weekday()) == date.weekday()
         ]
 
-        self.df_stops_times['date'] = self.df_stops_times['trip_id'].str.split(':').str[1].str[:-3]
-        self.df_stops_times['departure_time'] = self.df_stops_times['date'] + ':' + self.df_stops_times['departure_time']
-        self.df_stops_times['arrival_time'] = self.df_stops_times['date'] + ':' + self.df_stops_times['arrival_time']
-        self.df_stops_times.drop(columns=['date'], inplace=True)
+        #on ajoute la date au departure_time et au arrival_time
+        vect_dates = self.df_stops_times['trip_id'].str.split(':').str[1].str[:-3]
+        self.df_stops_times.loc[:, 'departure_time'] = vect_dates + ':' + self.df_stops_times['departure_time']
+        self.df_stops_times.loc[:, 'arrival_time'] = vect_dates + ':' + self.df_stops_times['arrival_time']
 
-        for i, row in self.df_stops_times.iterrows():
-            arr_hour = int(row['arrival_time'][11:13])
-            if(arr_hour > 23):
-                arrival_time = self.df_stops_times.at[i,'arrival_time']
-                new_arrival_time = arrival_time[:11] + str(arr_hour - 24) + arrival_time[13:]
-                self.df_stops_times.at[i,'arrival_time'] = new_arrival_time
-                date = datetime.fromisoformat(self.df_stops_times['arrival_time']) + timedelta(days=1)
-                self.df_stops_times.at[i,'arrival_time'] = date.strftime('%Y-%m-%d:%H:%M:%S')
+        #on formate les date qui sont > 23h
+        index_arr = self.df_stops_times['arrival_time'].str[11:13].astype(int) > 23
+        index_dep = self.df_stops_times['departure_time'].str[11:13].astype(int) > 23
 
-            dep_hour = int(row['departure_time'][11:13])
-            if(dep_hour > 23):
-                departure_time = self.df_stops_times.at[i,'departure_time']
-                new_departure_time = departure_time[:11] + str(arr_hour - 24) + departure_time[13:]
-                self.df_stops_times.at[i,'departure_time'] = new_departure_time
-                date = datetime.fromisoformat(self.df_stops_times['departure_time']) + timedelta(days=1)
-                self.df_stops_times.at[i,'departure_time'] = date.strftime('%Y-%m-%d:%H:%M:%S')
+        self.df_stops_times.loc[index_arr, 'arrival_time'] = self.df_stops_times.loc[index_arr, 'arrival_time'].apply(lambda x: TrainGraph.format_date(x))
+        self.df_stops_times.loc[index_dep, 'departure_time'] = self.df_stops_times.loc[index_dep, 'departure_time'].apply(lambda x: TrainGraph.format_date(x))
 
+        self.df_stops_times.reset_index(drop=True, inplace=True)
 
-        print(self.df_stops_times)
-        #self.propagation(gare_id, date)
-
-        print(TrainGraph.to_datetime('2024-03-12:24:13:00'))
+        self.propagation(gare_id, date)
+        
+        print(self.list_gare)
+        print(len(self.list_gare))
+        
 
 
 
@@ -45,33 +40,38 @@ class TrainGraph:
         if (gare_id in self.list_gare and self.list_gare[gare_id] < date ):
             return;
 
+        #cas simple de propagation avec les autres gares
         self.list_gare[gare_id] = date
-        #cas simple de propagtion avec les autres gars
-        
-        self.get_next_stations(gare_id, date)
+        indices_next_stations = self.get_next_stations(gare_id, date)
 
-        #group = self.df_stops_times[self.df_stops_times['trip_id'].isin(stops_time['trip_id'])].groupby('trip_id')
+        min_group = self.df_stops_times.loc[indices_next_stations].groupby('stop_id')['arrival_time'].min()
 
-        #on boucle dans les trips qui passe par la gare en question
-        # for _, trip in group:
-        #     gare_index = (trip['stop_id'] == gare_id)
+        for stop_id, min_date in min_group.items():
+            self.propagation(stop_id, datetime.fromisoformat(min_date) )
 
-        #     #on test si la gare en question n'est pas la dernière du trip
-        #     if (len(trip) > gare_index+1):
-        #         print()
+    def get_next_stations(self, gare_id:str,  date:datetime)->list:
+        '''
+        Cette fonction renvoie les indices des gares suivantes dans un trajet du dataframe. 
+        '''
+        #trie sur la gare_id et l'heure
+        index = ( 
+                    (self.df_stops_times['stop_id'] == gare_id) &
+                    (self.df_stops_times['departure_time'].apply(lambda x: datetime.fromisoformat(x).time()) > date.time()) 
+                )
+        indices = self.df_stops_times[index].index.tolist()
+        indice_next_stations = []
 
-    def get_next_stations(self, gare_id:str,  date:datetime):
-        #trie sur la gare_id
+        for i in indices:
+            if (i+1 < self.df_stops_times.shape[0] and
+                self.df_stops_times.at[i+1, 'trip_id'] == self.df_stops_times.at[i, 'trip_id']):
+                indice_next_stations.append(i+1)
+        return indice_next_stations
 
-        #trie sur l'heure
-        index = self.df_stops_times['stop_id'] == gare_id & self.df_stops_times['departure_time'].apply(lambda x: time.fromisoformat(x)) > date.time()
- 
-        
-        print(index)
 
 
     @staticmethod
-    def to_datetime(date_str):
+    def format_date(date_str:str)->str:
         # Convertir la chaîne de caractères en objet datetime
-        if int(date_str[11:13]) > 23:
-            date_str[11:13]
+        date_str = date_str[:11] + '0' + str(int(date_str[11:13]) - 24) + date_str[13:]
+        date = datetime.fromisoformat(date_str) + timedelta(days=1)
+        return (date.strftime('%Y-%m-%d:%H:%M:%S') )

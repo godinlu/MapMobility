@@ -25,7 +25,7 @@ def test_graph() :
     #train_graph.show()
 
 def test_graph_v2() :
-    train_graph = TrainGraph('StopPoint:OCETrain TER-87726802', datetime(2024,4,2,18,0,0))
+    train_graph = TrainGraph('StopPoint:OCETrain TER-87726802', datetime(2024,4,2,6,0,0))
 
 
 

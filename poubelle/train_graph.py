@@ -3,8 +3,8 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-from .utils import heures_en_secondes
-from .data import Data
+from ..src.utils import heures_en_secondes
+from ..src.data import Data
 from datetime import datetime
 
 class TrainGraph:

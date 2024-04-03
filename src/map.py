@@ -1,7 +1,7 @@
 import folium
 from tqdm import tqdm
 from src.data import Data
-from src.train_graph import TrainGraph
+from poubelle.train_graph import TrainGraph
 
 class Map:
     def __init__(self, location=[45.75, 4.85], zoom_start=7) -> None:
