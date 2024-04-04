@@ -1,13 +1,15 @@
 import folium
 from tqdm import tqdm
 from src.data import Data
-from poubelle.train_graph import TrainGraph
+from src.train_graph import TrainGraph
+from datetime import datetime
 
 class Map:
     def __init__(self, location=[45.75, 4.85], zoom_start=7) -> None:
         #on créer un instance d'une carte folium
         self.carte = folium.Map(location=[45.75, 4.85], zoom_start=7)
         self._data = Data.get_instance()
+        self._train_graph = TrainGraph('StopPoint:OCETrain TER-87723197', datetime(2024,4,1,6,0,0))
 
         #on dessine les contour de la region auvergne rhônes alpes
         folium.GeoJson(self._data.get_aura()).add_to(self.carte)
@@ -16,8 +18,19 @@ class Map:
         """
         Cette fonction ajoute un point jour sur la carte pour chaque gare
         """
+        color = "gray"
         for index, row in self._data.get_stops().iterrows():
-            folium.CircleMarker([row['stop_lat'], row['stop_lon']], radius=5, color='red', fill=True, fill_color='blue', popup=row['stop_name']).add_to(self.carte)
+            if (row['stop_id'] == 'StopPoint:OCETrain TER-87723197'):
+                color = "red"
+                popup = self._train_graph.get_list_station()['StopPoint:OCETrain TER-87726802']
+            elif (row['stop_id'] in self._train_graph.get_list_station().keys() ):
+                color = "green"
+                popup = self._train_graph.get_list_station()[row['stop_id']]
+            else:
+                color="white"
+                popup = row['stop_name']
+
+            folium.CircleMarker([row['stop_lat'], row['stop_lon']], radius=5, color=color, fill=True, fill_color='blue', popup=popup).add_to(self.carte)
 
     def add_trajet(self) -> None:
         """

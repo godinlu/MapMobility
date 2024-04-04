@@ -1,5 +1,5 @@
 #from src.train_graph import TrainGraph
-from src.train_graph_V2 import TrainGraph
+from src.train_graph import TrainGraph
 
 
 import pandas as pd

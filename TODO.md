@@ -26,3 +26,6 @@
 - faire une class qui récupère l'id de toutes les routes qui sont des trains.
 A partir du graphe des plus court chemins regarder plus précisément chaque trajet avec le fichier stop_times.
 
+- faire un algorithme de sauvegarde de données qui permet de sauvegarder les meilleurs jours de chaque semaine
+pour avoir un lundi, mardi, ... avec le plus de données possible 
+
