@@ -37,6 +37,8 @@ class StopTimesManager:
         if all(key in stop_time.columns for key in required_keys):
             print("Le fichier : ", file_path, " en cours de traitement")
             self.maj_score(stop_time)
+            print("Le fichier : ", file_path, " a été correctement traité et supprimé")
+            os.remove(file_path)
         else:
             os.remove(file_path)
             print("Le fichier : ", file_path, " n'est pas valide il a donc été supprimé")
@@ -44,9 +46,11 @@ class StopTimesManager:
     def maj_score(self, df:pd.DataFrame):
         df['date'] = df['trip_id'].str.split(':').str[1].str[:-3]
         for group_name, group in df.groupby('date'):
-            weekday = date.fromisoformat(group_name).weekday()
+            weekday = str(date.fromisoformat(group_name).weekday())
 
             if group.shape[0] > self.days_score[weekday]:
                 name = "stop_times_" + weekday + ".txt"
-                df.to_csv(os.path.join(self.DAYS_PATH, name), sep="\t", index=False)
+                print("le fichier ", name, " a été mis à jour. Le score est passé de ",
+                      self.days_score[weekday], " à ", group.shape[0])
+                group.to_csv(os.path.join(self.DAYS_PATH, name), sep="\t", index=False)
                 self.days_score[weekday] = group.shape[0]
