@@ -1,5 +1,6 @@
 #from src.train_graph import TrainGraph
 from src.train_graph import TrainGraph
+from src.stop_times_manager import StopTimesManager
 
 
 import pandas as pd
@@ -39,6 +40,10 @@ def test_data():
     data = Data.get_instance()
     print(data.get_stops_times())
 
+def test_stop_times_manager():
+    stop_time_manager = StopTimesManager()
+
+
 
 
 ## test Loc
@@ -57,4 +62,4 @@ def point_dans_region_auvergne_rhone_alpes(latitude, longitude, fichier_geojson)
 
 
 if __name__ == "__main__":
-    test_graph_v2()
+    test_stop_times_manager()
