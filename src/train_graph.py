@@ -6,12 +6,7 @@ class TrainGraph:
     def __init__(self, gare_id:str, start_time:datetime) -> None:
         self.list_gare = {}
         self.iter = 0
-        self.df_stops_times = Data.get_instance().get_stops_times()
-
-        #on commence par conserver seulement les trip qui correspondent au jour de la semaine
-        self.df_stops_times = self.df_stops_times[
-            self.df_stops_times['trip_id'].apply(lambda x: datetime.fromisoformat(x.split(':')[1]).weekday()) == start_time.weekday()
-        ]
+        self.df_stops_times = Data.get_instance().get_stop_times(start_time.weekday())
 
         #on ajoute la date au departure_time et au arrival_time
         vect_dates = self.df_stops_times['trip_id'].str.split(':').str[1].str[:-3]
@@ -30,8 +25,15 @@ class TrainGraph:
 
         self.propagation(gare_id, start_time)
         
+    def propagation_V2(self, list_id:list[str]) ->None:
+        for stop_id in list_id:
+            indices_next_stations = self.get_next_stations(stop_id, self.list_gare[stop_id])
+            min_group = self.df_stops_times.loc[indices_next_stations].groupby('stop_id')['arrival_time'].min()
+
 
     def propagation(self, gare_id:str, start_time:datetime) -> None:
+        print(self.iter)
+        self.iter+=1
         #cas d'arret lorsqu'il existe un meilleur temps pour allé à la gare
         if (gare_id in self.list_gare and self.list_gare[gare_id] < start_time ):
             return;

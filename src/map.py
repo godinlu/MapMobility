@@ -5,11 +5,13 @@ from src.train_graph import TrainGraph
 from datetime import datetime
 
 class Map:
-    def __init__(self, location=[45.75, 4.85], zoom_start=7) -> None:
+    def __init__(self, gare_id:str, date:datetime, location=[45.75, 4.85], zoom_start=7) -> None:
         #on créer un instance d'une carte folium
         self.carte = folium.Map(location=[45.75, 4.85], zoom_start=7)
         self._data = Data.get_instance()
-        self._train_graph = TrainGraph('StopPoint:OCETrain TER-87723197', datetime(2024,4,1,6,0,0))
+        self._train_graph = TrainGraph(gare_id, date)
+        self._date = date
+        self._gare_id = gare_id
 
         #on dessine les contour de la region auvergne rhônes alpes
         folium.GeoJson(self._data.get_aura()).add_to(self.carte)
@@ -20,9 +22,9 @@ class Map:
         """
         color = "gray"
         for index, row in self._data.get_stops().iterrows():
-            if (row['stop_id'] == 'StopPoint:OCETrain TER-87723197'):
+            if (row['stop_id'] == self._gare_id):
                 color = "red"
-                popup = self._train_graph.get_list_station()['StopPoint:OCETrain TER-87726802']
+                popup = self._train_graph.get_list_station()[row['stop_id']]
             elif (row['stop_id'] in self._train_graph.get_list_station().keys() ):
                 color = "green"
                 popup = self._train_graph.get_list_station()[row['stop_id']]

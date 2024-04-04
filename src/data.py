@@ -1,6 +1,7 @@
 import pandas as pd
 import json
 from shapely.geometry import Point, Polygon
+from src.stop_times_manager import StopTimesManager
 import geopandas as gpd
 
 class Data:
@@ -23,8 +24,9 @@ class Data:
         self._stops = pd.read_csv("data/stops.txt")
         self._stop_times = pd.read_csv("data/stop_times.txt")
         self._trips = pd.read_csv("data/trips.txt")
-        self._calendar_dates = pd.read_csv("data/calendar_dates.txt")
         self._routes = pd.read_csv("data/routes.txt")
+        
+        self._stop_times_manager = StopTimesManager()
 
         self._region_aura = gpd.read_file("data/region-auvergne-rhone-alpes.geojson")
 
@@ -51,14 +53,11 @@ class Data:
     def get_stops(self) -> pd.DataFrame:
         return self._stops
     
-    def get_stops_times(self) -> pd.DataFrame:
-        return self._stop_times
+    def get_stop_times(self, weekday:int) -> pd.DataFrame:
+        return self._stop_times_manager.get_stop_times(weekday)
     
     def get_trips(self) -> pd.DataFrame:
         return self._trips
-    
-    def get_calendar_dates(self) -> pd.DataFrame:
-        return self._calendar_dates
     
     def get_routes(self) -> pd.DataFrame:
         return self._routes

@@ -54,3 +54,7 @@ class StopTimesManager:
                       self.days_score[weekday], " à ", group.shape[0])
                 group.to_csv(os.path.join(self.DAYS_PATH, name), sep="\t", index=False)
                 self.days_score[weekday] = group.shape[0]
+
+    def get_stop_times(self, weekday:int)->pd.DataFrame:
+        name = "stop_times_" + str(weekday) + ".txt"
+        return pd.read_csv(os.path.join(self.DAYS_PATH, name), sep="\t")
