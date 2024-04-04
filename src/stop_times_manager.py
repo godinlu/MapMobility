@@ -44,6 +44,7 @@ class StopTimesManager:
             print("Le fichier : ", file_path, " n'est pas valide il a donc été supprimé")
 
     def maj_score(self, df:pd.DataFrame):
+        df = df[df['stop_id'].str.contains('Train')] 
         df['date'] = df['trip_id'].str.split(':').str[1].str[:-3]
         for group_name, group in df.groupby('date'):
             weekday = str(date.fromisoformat(group_name).weekday())

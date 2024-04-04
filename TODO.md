@@ -16,6 +16,12 @@
 
 ## Luc Godin
 
+idées d'optimisation:
+    -supprimer les colones inutile
+    -vectoriser la recherche des voisins suivants
+    -supprimer les lignes de car
+    -mettre les ligne de date directement en datetime en prétraitement
+
 ## Victor Sigrist
 
 - regarder pour le vélos
