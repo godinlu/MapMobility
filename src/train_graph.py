@@ -23,29 +23,26 @@ class TrainGraph:
 
         self.df_stops_times.reset_index(drop=True, inplace=True)
 
-        self.propagation(gare_id, start_time)
+        self.list_gare[gare_id] = start_time
+        self.propagation([gare_id])
         
-    def propagation_V2(self, list_id:list[str]) ->None:
+    def propagation(self, list_id:list[str]) ->None:
+        list_next_id = []
         for stop_id in list_id:
             indices_next_stations = self.get_next_stations(stop_id, self.list_gare[stop_id])
             min_group = self.df_stops_times.loc[indices_next_stations].groupby('stop_id')['arrival_time'].min()
+            for next_stop_id, min_date in min_group.items():
+                dt_min_date = datetime.fromisoformat(min_date)
+                if (next_stop_id not in self.list_gare or dt_min_date  < self.list_gare[next_stop_id] ):
+                    #cas ou la récursion doit ce faire donc on ajoute l'id de la gare en question à list_next_id
+                    #et on met à jour la date d'arrivé à cette gare
+                    list_next_id.append(next_stop_id)
+                    self.list_gare[next_stop_id] = dt_min_date 
 
-
-    def propagation(self, gare_id:str, start_time:datetime) -> None:
-        print(self.iter)
-        self.iter+=1
-        #cas d'arret lorsqu'il existe un meilleur temps pour allé à la gare
-        if (gare_id in self.list_gare and self.list_gare[gare_id] < start_time ):
-            return;
-
-        #cas simple de propagation avec les autres gares
-        self.list_gare[gare_id] = start_time
-        indices_next_stations = self.get_next_stations(gare_id, start_time)
-
-        min_group = self.df_stops_times.loc[indices_next_stations].groupby('stop_id')['arrival_time'].min()
-
-        for stop_id, min_date in min_group.items():
-            self.propagation(stop_id, datetime.fromisoformat(min_date) )
+        print(len(list_next_id))
+        #si la liste de next_id n'est pas vide alors on lance une récursion
+        if list_next_id:
+            self.propagation(list_next_id)
 
     def get_next_stations(self, gare_id:str,  start_time:datetime)->list:
         '''
