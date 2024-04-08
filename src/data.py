@@ -2,7 +2,7 @@ import pandas as pd
 import json
 from shapely.geometry import Point, Polygon
 from src.stop_times_manager import StopTimesManager
-from src.utils import mercator_projection
+from src.utils import meters_projection
 import numpy as np
 import geopandas as gpd
 from tqdm import tqdm
@@ -55,7 +55,7 @@ class Data:
         self._stop_times = self._stop_times[self._stop_times['stop_id'].isin(self._stops['stop_id'])]
 
 
-    def get_grid_AURA(self) ->list[tuple]:
+    def get_grid_AURA(self) ->dict[str,list[list[float]]]:
         if not os.path.exists(self.AURA_GRID_PATH):
             self.create_grid_AURA()
         
@@ -74,7 +74,7 @@ class Data:
             for y in Y_arr:
                 if region_polygon.contains(Point(x,y)):
                     aura_grid['3D'].append((x,y))
-                    aura_grid['2D'].append( mercator_projection(x, y) )
+                    aura_grid['2D'].append( meters_projection(x, y) )
 
         with open(self.AURA_GRID_PATH, "w") as file:
             json.dump(aura_grid, file)

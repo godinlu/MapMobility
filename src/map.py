@@ -1,7 +1,9 @@
 import folium
+from folium.plugins import HeatMap
 from tqdm import tqdm
 from src.data import Data
 from src.train_graph import TrainGraph
+from src.time_grid import TimeGrid
 from datetime import datetime
 
 class Map:
@@ -49,9 +51,16 @@ class Map:
             folium.PolyLine([(gare_a['stop_lat'], gare_a['stop_lon']), (gare_b['stop_lat'], gare_b['stop_lon'])], color="blue").add_to(self.carte)
 
 
+    def add_heatmap(self)->None:
+        train_graph = TrainGraph('StopPoint:OCETrain TER-87761007', datetime(2024,4,2,20,0,0))
+
+        time_grid = TimeGrid(train_graph.get_list_station())
+
+        HeatMap(time_grid.get_grid()).add_to(self.carte)
     
     def save(self, name="carte_auvergne_rhone_alpes")->None:
         self.carte.save(name + '.html')
+
 
 
 

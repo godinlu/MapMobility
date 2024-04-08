@@ -28,11 +28,8 @@ def haversine_distance(lat1, lon1, lat2, lon2):
 
     return distance
 
-def mercator_projection(lat, lon) -> tuple[float, float]:
-    R = 6371000  # Rayon moyen de la Terre en mètres
-    x = R * radians(lon)
-    y = R * log(tan(pi/4 + radians(lat)/2))
-    return (x, y) 
+def meters_projection(lat, lon) -> tuple[float, float]:
+    return(lat*111,lon*80)
 
 def heures_en_secondes(heure_str:str, sep:str=':')->int:
     """
@@ -53,3 +50,9 @@ def get_bike_time(location1, location2)->int:
 
         #ensuite on calcul le temps en prenant 15km/h
         return ((metres/1000) / 15 ) * 60
+
+def get_bike_time(distance:float)->int:
+     """
+     renvoie le temps en seconde de la distance à vélo en prenant 15km/h
+     """
+     return ((distance/1000) / 15 ) * 60 * 60
