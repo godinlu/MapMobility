@@ -25,6 +25,7 @@ class TrainGraph:
 
         self.list_gare[gare_id] = start_time
         self.propagation([gare_id])
+        self.set_list_to_sec(start_time)
         
     def propagation(self, list_id:list[str]) ->None:
         list_next_id = []
@@ -71,5 +72,12 @@ class TrainGraph:
         tmp_date = datetime.fromisoformat(date_str) + timedelta(days=1)
         return (tmp_date.strftime('%Y-%m-%d:%H:%M:%S') )
     
+    def set_list_to_sec(self, start_time:datetime)->None:
+        """
+        Cette fonction transforme les heures d'arrivé en seconde depuis le points source
+        """
+        for key in self.list_gare.keys():
+            self.list_gare[key] = (self.list_gare[key] - start_time).total_seconds()
+
     def get_list_station(self)->dict:
         return self.list_gare

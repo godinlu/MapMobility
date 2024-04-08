@@ -2,7 +2,12 @@ import pandas as pd
 import json
 from shapely.geometry import Point, Polygon
 from src.stop_times_manager import StopTimesManager
+from src.utils import mercator_projection
+import numpy as np
 import geopandas as gpd
+from tqdm import tqdm
+import os
+
 
 class Data:
     """
@@ -10,6 +15,7 @@ class Data:
     d'avoir plusieurs lecture de données à des endroits différents
     """
     _instance = None
+    AURA_GRID_PATH = 'data/AURA_grid.json'
 
     @staticmethod
     def get_instance():
@@ -47,6 +53,31 @@ class Data:
 
         #puis on garde que les trajet qui passent par les gares selectionné précédemment
         self._stop_times = self._stop_times[self._stop_times['stop_id'].isin(self._stops['stop_id'])]
+
+
+    def get_grid_AURA(self) ->list[tuple]:
+        if not os.path.exists(self.AURA_GRID_PATH):
+            self.create_grid_AURA()
+        
+        with open(self.AURA_GRID_PATH, "r") as json_file:
+            return json.load(json_file) 
+
+    
+    def create_grid_AURA(self, length:int = 1000, height:int = 800) -> None:
+        X_arr = np.linspace(self._region_aura.bounds.min()['minx'],self._region_aura.bounds.min()['maxx'],length)
+        Y_arr = np.linspace(self._region_aura.bounds.min()['miny'],self._region_aura.bounds.min()['maxy'],height)
+
+        region_polygon = self._region_aura.geometry.iloc[0].convex_hull
+
+        aura_grid = {'3D':[], '2D':[]}
+        for x in tqdm(X_arr):
+            for y in Y_arr:
+                if region_polygon.contains(Point(x,y)):
+                    aura_grid['3D'].append((x,y))
+                    aura_grid['2D'].append( mercator_projection(x, y) )
+
+        with open(self.AURA_GRID_PATH, "w") as file:
+            json.dump(aura_grid, file)
 
 
 

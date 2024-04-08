@@ -1,3 +1,4 @@
+from math import radians, tan, log, pi, cos, sin
 import math
 
 def haversine_distance(lat1, lon1, lat2, lon2):
@@ -6,17 +7,17 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     points
     """
     # Convertir les coordonnées de degrés à radians
-    lat1_rad = math.radians(lat1)
-    lon1_rad = math.radians(lon1)
-    lat2_rad = math.radians(lat2)
-    lon2_rad = math.radians(lon2)
+    lat1_rad = radians(lat1)
+    lon1_rad = radians(lon1)
+    lat2_rad = radians(lat2)
+    lon2_rad = radians(lon2)
 
     # Calcul des différences de latitude et de longitude
     dlat = lat2_rad - lat1_rad
     dlon = lon2_rad - lon1_rad
 
     # Formule haversine
-    a = math.sin(dlat / 2) ** 2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon / 2) ** 2
+    a = sin(dlat / 2) ** 2 + cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon / 2) ** 2
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
     # Rayon de la Terre en mètres (approximatif)
@@ -26,6 +27,12 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     distance = radius_earth * c
 
     return distance
+
+def mercator_projection(lat, lon) -> tuple[float, float]:
+    R = 6371000  # Rayon moyen de la Terre en mètres
+    x = R * radians(lon)
+    y = R * log(tan(pi/4 + radians(lat)/2))
+    return (x, y) 
 
 def heures_en_secondes(heure_str:str, sep:str=':')->int:
     """

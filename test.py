@@ -1,14 +1,13 @@
 #from src.train_graph import TrainGraph
 from src.train_graph import TrainGraph
 from src.stop_times_manager import StopTimesManager
-from src.SPG import SPG
 
 
 import pandas as pd
 from src.utils import get_bike_time
+from src.time_grid import TimeGrid
 from src.data import Data
 from src.map import Map
-from src.map2 import Map2
 from datetime import datetime
 import geopandas as gpd
 from shapely.geometry import Point
@@ -40,7 +39,7 @@ def test_map():
 
 def test_data():
     data = Data.get_instance()
-    print(data.get_stops_times())
+    print(data.get_grid_AURA())
 
 def test_stop_times_manager():
     stop_time_manager = StopTimesManager()
@@ -61,17 +60,15 @@ def point_dans_region_auvergne_rhone_alpes(latitude, longitude, fichier_geojson)
 
     return est_dans_region
 
-def test_SPG(gare_id:str,start_time:datetime):
-    graph = SPG(gare_id,start_time)
+def test_time_grid_SPG():
+    train_graph = TrainGraph('StopPoint:OCETrain TER-87761007', datetime(2024,4,2,20,0,0))
 
-def test_map_2():
-    map = Map2('StopPoint:OCETrain TER-87723197', datetime(2024,4,2,10,0,0))
-    map.add_gare()
-    #map.add_trajet()
-    map.save()
+    time_grid = TimeGrid(train_graph.get_list_station())
+
+
 
 
 
 if __name__ == "__main__":
     #test_SPG('StopPoint:OCETrain TER-87726802',datetime(2024, 4, 2))
-    test_map_2()
+    test_time_grid_SPG()
