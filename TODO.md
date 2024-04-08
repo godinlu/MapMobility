@@ -35,3 +35,10 @@ A partir du graphe des plus court chemins regarder plus précisément chaque tra
 - faire un algorithme de sauvegarde de données qui permet de sauvegarder les meilleurs jours de chaque semaine
 pour avoir un lundi, mardi, ... avec le plus de données possible 
 
+Vélo:
+
+- api voiture avec coefficient
+- approximé avec les différence d'altitude
+- carte des zones inacessible
+
+

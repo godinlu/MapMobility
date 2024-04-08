@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import geopandas as gpd
 import json
 from datetime import date
 
@@ -44,7 +45,7 @@ class StopTimesManager:
             print("Le fichier : ", file_path, " n'est pas valide il a donc été supprimé")
 
     def maj_score(self, df:pd.DataFrame):
-        df = df[df['stop_id'].str.contains('Train')] 
+        df = self.preprocess_data(df)
         df['date'] = df['trip_id'].str.split(':').str[1].str[:-3]
         for group_name, group in df.groupby('date'):
             weekday = str(date.fromisoformat(group_name).weekday())
@@ -55,6 +56,15 @@ class StopTimesManager:
                       self.days_score[weekday], " à ", group.shape[0])
                 group.to_csv(os.path.join(self.DAYS_PATH, name), sep="\t", index=False)
                 self.days_score[weekday] = group.shape[0]
+
+    def preprocess_data(self, df:pd.DataFrame):
+        region_aura = gpd.read_file("data/region-auvergne-rhone-alpes.geojson")
+        stops = pd.read_csv("data/stops.txt")
+        stops = stops[stops['stop_id'].str.contains('Train')]
+        gdf_stops = gpd.GeoDataFrame(stops, geometry=gpd.points_from_xy(stops['stop_lon'], stops['stop_lat']))
+        mask = gdf_stops.within(region_aura.geometry.unary_union)
+        df = df[df['stop_id'].isin(stops[mask]['stop_id'])]
+        return df
 
     def get_stop_times(self, weekday:int)->pd.DataFrame:
         name = "stop_times_" + str(weekday) + ".txt"
