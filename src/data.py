@@ -67,7 +67,9 @@ class Data:
         X_arr = np.linspace(self._region_aura.bounds.min()['minx'],self._region_aura.bounds.min()['maxx'],length)
         Y_arr = np.linspace(self._region_aura.bounds.min()['miny'],self._region_aura.bounds.min()['maxy'],height)
 
-        region_polygon = self._region_aura.geometry.iloc[0].convex_hull
+        with open('./data/region-auvergne-rhone-alpes.geojson') as f:
+            geojson_data = json.load(f)
+        region_polygon = Polygon(geojson_data['geometry']['coordinates'][0])
 
         aura_grid = {'3D':[], '2D':[]}
         for x in tqdm(X_arr):

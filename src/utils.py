@@ -29,7 +29,7 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     return distance
 
 def meters_projection(lat, lon) -> tuple[float, float]:
-    return(lat*111,lon*80)
+    return(lat*111000,lon*80000)
 
 def heures_en_secondes(heure_str:str, sep:str=':')->int:
     """

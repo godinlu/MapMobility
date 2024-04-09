@@ -17,13 +17,16 @@ class TimeGrid:
 
 
     def create_station_dist(self) -> None:
-        stops_2D = self._stops.apply(lambda row:meters_projection(row['stop_lat'], row['stop_lon']), axis=1).to_list()
+        stops_2D = self._stops.apply(lambda row:meters_projection(row['stop_lon'], row['stop_lat']), axis=1).to_list()
         #print(stops_2D)
         # points_gares = list(  zip(self._stops['stop_lat'], self._stops['stop_lon']))
         # print(points_gares)
+
         kdtree_328 = KDTree(stops_2D)
         distances, indices = kdtree_328.query(self._aura_grid['2D'])
         distances =  list(map(get_bike_time, distances))
+
+        print(pd.DataFrame(distances).describe())
 
         for i in range(len(distances)):
             distances[i] = [
@@ -33,6 +36,7 @@ class TimeGrid:
                 self._stops.loc[indices[i],'time']  + distances[i]
                 ] 
         self._grid = distances
+        print(pd.DataFrame(self._grid).describe())
 
     def get_grid(self) -> list[list[float]]:
         return self._grid
