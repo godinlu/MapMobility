@@ -43,7 +43,6 @@ class Map:
         train_graph = TrainGraph()
         stops = self._data.get_stops()
 
-        print
 
         for edge in tqdm(train_graph.graph.edges(), desc = "adding edge in the map"):
             gare_a = stops[stops["stop_id"] == edge[0]].iloc[0]
@@ -52,13 +51,13 @@ class Map:
 
 
     def add_heatmap(self)->None:
-        train_graph = TrainGraph('StopPoint:OCETrain TER-87761007', datetime(2024,4,2,20,0,0))
+        time_grid = TimeGrid(self._train_graph.get_list_station())
 
-        time_grid = TimeGrid(train_graph.get_list_station())
-
-        HeatMap(time_grid.get_grid()).add_to(self.carte)
+        HeatMap(time_grid.get_grid(),min_opacity=0.2,max_opacity = 0.3).add_to(self.carte)
     
     def save(self, name="carte_auvergne_rhone_alpes")->None:
+
+        #print(self.carte._repr_html_().split('</script>')[-1])
         self.carte.save(name + '.html')
 
 

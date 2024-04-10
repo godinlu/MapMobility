@@ -39,17 +39,19 @@ def heures_en_secondes(heure_str:str, sep:str=':')->int:
     heures, minutes, secondes = map(int, heure_str.split(sep))
     return heures * 3600 + minutes * 60 + secondes
 
-def get_bike_time(location1, location2)->int:
+def get_bike_time_between(location1, location2)->int:
         """
         cette fonction prend 2 point sur la carte un point est représenté en [lattitude, longitude]
         puis renvoie le temps en minute du trajet à vélo.
         La fonction ne prend pas en compte les routes ou le dénivelé
         """
         #on calcul la distance en mettres
-        metres = haversine_distance(location1[0],location1[1], location2[0], location2[1])
+        x1, y1 = location1[0]*111000, location1[1]*80000
+        x2, y2 = location2[0]*111000, location2[1]*80000
+        metres = math.sqrt((x1-x2)**2 + (y1-y2)**2)
 
         #ensuite on calcul le temps en prenant 15km/h
-        return ((metres/1000) / 15 ) * 60
+        return ((metres/1000) / 15 ) * 60 * 60
 
 def get_bike_time(distance:float)->int:
      """
