@@ -1,7 +1,8 @@
-from src.data import Data
+from .data import Data
 from scipy.spatial import KDTree
-from src.utils import meters_projection, get_bike_time
+from .utils import meters_projection, get_bike_time
 import pandas as pd
+import numpy as np
 
 class TimeGrid:
     def __init__(self,dict_station:dict, k=1) -> None:
@@ -18,28 +19,25 @@ class TimeGrid:
 
     def create_station_dist(self) -> None:
         stops_2D = self._stops.apply(lambda row:meters_projection(row['stop_lon'], row['stop_lat']), axis=1).to_list()
-        #print(stops_2D)
-        # points_gares = list(  zip(self._stops['stop_lat'], self._stops['stop_lon']))
-        # print(points_gares)
 
         kdtree_328 = KDTree(stops_2D)
         distances, indices = kdtree_328.query(self._aura_grid['2D'])
         distances =  list(map(get_bike_time, distances))
 
-        print(pd.DataFrame(distances).describe())
+        # Extraire les temps des arrêts de bus
+        bus_stop_times = self._stops.loc[indices, 'time'].reset_index(drop=True)
 
-        for i in range(len(distances)):
-            distances[i] = [
-                
-                self._aura_grid['3D'][i][1],
-                self._aura_grid['3D'][i][0],
-                self._stops.loc[indices[i],'time']  + distances[i]
-                ] 
-        self._grid = distances
-        print(pd.DataFrame(self._grid).describe())
+        df_tmp = pd.DataFrame({'time': bus_stop_times, 'distances':distances})
+        # Ajouter les distances aux temps des arrêts de bus
+        self._grid = np.hstack((
+            np.array(self._aura_grid['3D'])[:, ::-1],
+            (df_tmp['time'] + df_tmp['distances']).to_numpy().reshape((len(distances),1))
+        ))
 
     def get_grid(self) -> list[list[float]]:
-        return self._grid
+        return self._grid.tolist()
+    
+    
 
 
 
