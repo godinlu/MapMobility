@@ -61,7 +61,7 @@ def point_dans_region_auvergne_rhone_alpes(latitude, longitude, fichier_geojson)
     return est_dans_region
 
 def test_time_grid_SPG():
-    train_graph = TrainGraph('StopPoint:OCETrain TER-87761007', datetime(2024,4,2,20,0,0))
+    train_graph = TrainGraph([5.72,45.19], datetime(2024,4,2,20,0,0))
 
     time_grid = TimeGrid(train_graph.get_list_station())
 
