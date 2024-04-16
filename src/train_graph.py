@@ -1,7 +1,7 @@
 from .data import Data
 import pandas as pd
 from datetime import datetime, time, timedelta, date
-from src.utils import get_bike_time_between,meters_projection
+from src.utils import get_bike_time_between,meters_projection,get_bike_time
 from scipy.spatial import KDTree
 
 class TrainGraph:
@@ -15,9 +15,9 @@ class TrainGraph:
 
         kdtree_328 = KDTree(stops_2D)
         
-        distances, indices = kdtree_328.query(meters_projection(gare_loc[0],gare_loc[1]))
+        distances, indices = kdtree_328.query(meters_projection(gare_loc[0],gare_loc[1]),k=10)
+        print(distances,indices)
         gare_id = self._stops.iloc[indices]['stop_id']
-        print(distances)
         self._stops.set_index('stop_id', inplace=True)
 
         #on ajoute la date au departure_time et au arrival_time
@@ -35,9 +35,11 @@ class TrainGraph:
 
         self.df_stops_times.reset_index(drop=True, inplace=True)
 
-
-        self.list_gare[gare_id] = start_time + timedelta(seconds = distances)
-        self.propagation([gare_id])
+        self.list_gare["gare_fictive"] = start_time
+        for gare,dist in zip(gare_id,distances) :
+            self.list_gare[gare] = start_time + timedelta(seconds = get_bike_time(dist))
+        print
+        self.propagation(gare_id)
         self.set_list_to_sec(start_time)
         self._stops.reset_index(inplace=True)
         
