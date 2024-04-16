@@ -58,3 +58,43 @@ def get_bike_time(distance:float)->int:
      renvoie le temps en seconde de la distance à vélo en prenant 15km/h
      """
      return ((distance/1000) / 15 ) * 60 * 60
+
+# Convertir un indice unique en une paire d'indices (row, col)
+def idx_to_row_col(idx, j):
+    row = idx // j
+    col = idx % j
+    return row, col
+
+def get_neighbors_indices(idx, i, j):
+    """
+    Trouve les indices des voisins d'un élément dans un vecteur de taille i*j.
+    
+    Args:
+    - idx (int): Indice de l'élément dans le vecteur de taille i*j.
+    - i (int): Nombre de lignes.
+    - j (int): Nombre de colonnes.
+    
+    Returns:
+    - list[int]: Liste des indices des voisins.
+    """
+    neighbors = []
+    
+    # Coordonnées de l'élément dans le tableau 2D
+    row = idx // j
+    col = idx % j
+    
+    # Indices des voisins
+    offsets = [
+        (-1, -1), (-1, 0), (-1, 1),
+        (0, -1),           (0, 1),
+        (1, -1),  (1, 0),  (1, 1)
+    ]
+    
+    for di, dj in offsets:
+        new_row, new_col = row + di, col + dj
+        
+        # Vérifier les limites du tableau
+        if 0 <= new_row < i and 0 <= new_col < j:
+            neighbors.append(new_row * j + new_col)
+    
+    return neighbors
