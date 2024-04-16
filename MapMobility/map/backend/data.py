@@ -50,6 +50,10 @@ class Data:
         gdf_stops = gpd.GeoDataFrame(self._stops, geometry=gpd.points_from_xy(self._stops['stop_lon'], self._stops['stop_lat']))
         mask = gdf_stops.within(self._region_aura.geometry.unary_union)
         self._stops = self._stops[mask]
+        self._stops
+
+        raw_false_station = pd.Series(['gare_fictive', 'gare_fictive',None,0,0,None,None,None,None], index=self._stops.columns)
+        self._stops.loc[len(self._stops)] = raw_false_station
 
         #puis on garde que les trajet qui passent par les gares selectionné précédemment
         self._stop_times = self._stop_times[self._stop_times['stop_id'].isin(self._stops['stop_id'])]
@@ -58,25 +62,25 @@ class Data:
     def get_grid_AURA(self) ->dict[str,list[list[float]]]:
         if not os.path.exists(PATH_AURA_GRID):
             self.create_grid_AURA()
-        
+
         with open(PATH_AURA_GRID, "r") as json_file:
             return json.load(json_file) 
 
     
     def create_grid_AURA(self, length:int = 1000, height:int = 800) -> None:
-        X_arr = np.linspace(self._region_aura.bounds.min()['minx'],self._region_aura.bounds.min()['maxx'],length)
-        Y_arr = np.linspace(self._region_aura.bounds.min()['miny'],self._region_aura.bounds.min()['maxy'],height)
+        lng_arr = np.linspace(self._region_aura.bounds.min()['minx'],self._region_aura.bounds.min()['maxx'],length)
+        lat_arr = np.linspace(self._region_aura.bounds.min()['miny'],self._region_aura.bounds.min()['maxy'],height)
 
-        with open('./data/region-auvergne-rhone-alpes.geojson') as f:
+        with open(PATH_GEOJSON_AURA) as f:
             geojson_data = json.load(f)
         region_polygon = Polygon(geojson_data['geometry']['coordinates'][0])
 
         aura_grid = {'3D':[], '2D':[]}
-        for x in tqdm(X_arr):
-            for y in Y_arr:
-                if region_polygon.contains(Point(x,y)):
-                    aura_grid['3D'].append((x,y))
-                    aura_grid['2D'].append( meters_projection(x, y) )
+        for lat in tqdm(lat_arr):
+            for lng in lng_arr:
+                if region_polygon.contains(Point(lng,lat)):
+                    aura_grid['3D'].append((lat,lng))
+                    aura_grid['2D'].append( meters_projection(lat,lng) )
 
         with open(PATH_AURA_GRID, "w") as file:
             json.dump(aura_grid, file)

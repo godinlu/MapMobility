@@ -1,14 +1,21 @@
 from .data import Data
 import pandas as pd
 from datetime import datetime, time, timedelta, date
-from .utils import get_bike_time_between
+from .utils import get_bike_time_between,meters_projection,get_bike_time
+from scipy.spatial import KDTree
 
 class TrainGraph:
-    def __init__(self, gare_id:str, start_time:datetime) -> None:
+    def __init__(self, gare_loc:tuple[float,float], start_time:datetime) -> None:
         self.list_gare = {}
-        self.iter = 0
         self.df_stops_times = Data.get_instance().get_stop_times(start_time.weekday())
         self._stops = Data.get_instance().get_stops()
+        stops_2D = self._stops.apply(lambda row:meters_projection(row['stop_lat'], row['stop_lon']), axis=1).to_list()
+
+        kdtree_328 = KDTree(stops_2D)
+        
+        print("salut : ",len(self._stops))
+        distances, indices = kdtree_328.query(meters_projection(gare_loc[0],gare_loc[1]),k=10)
+        gare_id = self._stops.iloc[indices]['stop_id']
         self._stops.set_index('stop_id', inplace=True)
 
         #on ajoute la date au departure_time et au arrival_time
@@ -26,8 +33,10 @@ class TrainGraph:
 
         self.df_stops_times.reset_index(drop=True, inplace=True)
 
-        self.list_gare[gare_id] = start_time
-        self.propagation([gare_id])
+        self.list_gare["gare_fictive"] = start_time
+        for gare,dist in zip(gare_id,distances) :
+            self.list_gare[gare] = start_time + timedelta(seconds = get_bike_time(dist))
+        self.propagation(gare_id)
         self.set_list_to_sec(start_time)
         self._stops.reset_index(inplace=True)
         
