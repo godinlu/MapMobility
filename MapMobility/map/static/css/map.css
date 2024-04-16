@@ -1,3 +1,8 @@
 #map {
     height: 50em;
+    width: 80%;
+}
+
+.flex{
+    display: flex;
 }

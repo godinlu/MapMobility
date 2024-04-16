@@ -1,11 +1,11 @@
 from django import forms
-from datetime import datetime
 
 
-class DateForm(forms.Form):
+class mapForm(forms.Form):
     date_field = forms.DateTimeField(
         label="date",
         required=False,
-        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-        initial=datetime.now()
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'})
     )
+    lattitude = forms.FloatField(label='lattitude')
+    longitude = forms.FloatField(label='longitude')
