@@ -1,7 +1,7 @@
 from .data import Data
 import pandas as pd
 from datetime import datetime, time, timedelta, date
-from src.utils import get_bike_time_between
+from .utils import get_bike_time_between
 
 class TrainGraph:
     def __init__(self, gare_id:str, start_time:datetime) -> None:

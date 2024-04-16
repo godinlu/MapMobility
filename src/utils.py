@@ -55,7 +55,7 @@ def get_bike_time_between(location1, location2)->int:
 
 def get_bike_time(distance:float)->int:
      """
-     renvoie le temps en seconde de la distance à vélo en prenant 15km/h
+     renvoie le temps en seconde de la distance en mètres à vélo en prenant 15km/h
      """
      return ((distance/1000) / 15 ) * 60 * 60
 
