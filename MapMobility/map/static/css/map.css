@@ -2,7 +2,16 @@
     height: 50em;
     width: 80%;
 }
+img.huechange { filter: hue-rotate(120deg); }
+
+form {
+    padding: 0.5em;
+}
 
 .flex{
     display: flex;
+}
+
+.space{
+    justify-content: space-around;
 }

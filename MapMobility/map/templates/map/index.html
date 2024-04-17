@@ -1,0 +1,59 @@
+{% load static %}
+<!-- base.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="{% static 'css/map.css' %}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""/>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+    <!-- Inclure le fichier JavaScript de Leaflet.heat -->
+    <script src="https://cdn.jsdelivr.net/gh/python-visualization/folium@main/folium/templates/leaflet_heat.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/heatmap.js/2.0.0/heatmap.min.js"></script>
+    <script src=" https://cdn.jsdelivr.net/npm/leaflet-heatmap@1.0.0/leaflet-heatmap.min.js "></script>
+
+</head>
+<body>
+    <header>
+    </header>
+
+    <main>
+        
+        <div class="flex">
+            <div id="map"></div>
+            <form action="/map/" method="post">
+                {% csrf_token %}
+                {{ form }}
+                <div class="flex space">
+                    <input type="button" id="choose_loc" value="Point de départ">
+                    <input type="submit" value="Valider">
+                </div>
+                <p id="p_choose_loc">
+
+                </p>
+                
+            </form>
+        </div>
+        
+            
+        
+    </main>
+
+    <footer>
+
+    </footer>
+</body>
+
+
+</html>
+<script src="{% static 'js/map.js' %}"></script>
+<script>
+    const heat_data = {{ heatmap_data | safe }}
+    init_heatmap(heat_data, JSON.parse('{{ geo_json_aura | escapejs }}'), {{ start_coord | safe }});
+</script>

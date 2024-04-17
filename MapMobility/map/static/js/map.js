@@ -1,8 +1,10 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //          VARIABLE GLOBALE
 let map = L.map('map').setView([45.75, 4.85], 7);
-let lattitude = document.getElementById("id_lattitude")
-let longitude = document.getElementById("id_longitude")
+let lattitude = document.getElementById("id_lattitude");
+let longitude = document.getElementById("id_longitude");
+let p_choose_loc = document.getElementById("p_choose_loc");
+let marker_loc = undefined;
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -49,16 +51,29 @@ function click_handler(event){
 
 function on_move_handler(event){
     const latlng = event.latlng;
-    lattitude.value = latlng.lat
-    longitude.value = latlng.lng
+    lattitude.value = latlng.lat;
+    longitude.value = latlng.lng;
+    set_new_marker();
+}
+
+/**
+ * cette fonction met un marker à l'endroit ou la future localisation
+ * est choisi
+ */
+function set_new_marker(){
+    if (typeof marker !== 'undefined') marker.remove();
+    marker = L.marker([lattitude.value, longitude.value]).addTo(map);
+    marker._icon.classList.add("huechange");
 }
 
 function handle_click_choose_loc(event){
-
+    p_choose_loc.innerHTML = "Veuillez indiquer sur la carte le nouveau point de départ.";
     map.on('mousemove', on_move_handler);
     map.off('click', click_handler);
     map.on('click', function(e){
         map.off('mousemove', on_move_handler);
+        L.marker
+        p_choose_loc.innerHTML = "";
     });
 }
 

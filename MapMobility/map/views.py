@@ -27,10 +27,9 @@ def index(request):
         
         
 
-    gare_id = 'StopPoint:OCETrain TER-87723197'
     data = Data.get_instance()
-    train_graph = TrainGraph(gare_id, date)
-    time_grid = TimeGrid(train_graph.get_list_station())
+    train_graph = TrainGraph((lat,lng), date)
+    time_grid = TimeGrid(train_graph.get_list_station(), (lat,lng))
 
     context = {
         'geo_json_aura' : data.get_aura().to_json(),
