@@ -8,7 +8,8 @@ class TimeGrid:
     def __init__(self,dict_station:dict, start_coord:tuple[float, float]) -> None:
         self._aura_grid = Data.get_instance().get_grid_AURA()
         self._stops = Data.get_instance().get_stops()
-        
+        self._stops.loc[self._stops['stop_id'] == 'gare_fictive', 'stop_lat'] = start_coord[0]
+        self._stops.loc[self._stops['stop_id'] == 'gare_fictive', 'stop_lon'] = start_coord[1]
 
         self._start_coord = start_coord
 
@@ -40,6 +41,5 @@ class TimeGrid:
         return self._grid.tolist()
     
     
-
 
 

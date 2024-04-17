@@ -9,12 +9,14 @@ class TrainGraph:
         self.list_gare = {}
         self.df_stops_times = Data.get_instance().get_stop_times(start_time.weekday())
         self._stops = Data.get_instance().get_stops()
+        stops_2D = self._stops.apply(lambda row:meters_projection(row['stop_lat'], row['stop_lon']), axis=1).to_list()
 
-
-
+        kdtree_328 = KDTree(stops_2D)
+        
+        print("salut : ",len(self._stops))
+        distances, indices = kdtree_328.query(meters_projection(gare_loc[0],gare_loc[1]),k=10)
+        gare_id = self._stops.iloc[indices]['stop_id']
         self._stops.set_index('stop_id', inplace=True)
-        self._stops.at['gare_fictive', 'stop_lat'] = gare_loc[0]
-        self._stops.at['gare_fictive', 'stop_lon'] = gare_loc[1]
 
         #on ajoute la date au departure_time et au arrival_time
         vect_dates = self.df_stops_times['trip_id'].str.split(':').str[1].str[:-3]
@@ -31,16 +33,10 @@ class TrainGraph:
 
         self.df_stops_times.reset_index(drop=True, inplace=True)
 
-
-        for index, row in self._stops.iterrows():
-            bike_time = get_bike_time_between(gare_loc, (row['stop_lat'], row['stop_lon']))
-            self.list_gare[index] = start_time + timedelta(bike_time) 
-
-        print(self.list_gare)
-        #self.list_gare["gare_fictive"] = start_time
-        #print(self.list_gare)
-
-        self.propagation(self.list_gare.keys())
+        self.list_gare["gare_fictive"] = start_time
+        for gare,dist in zip(gare_id,distances) :
+            self.list_gare[gare] = start_time + timedelta(seconds = get_bike_time(dist))
+        self.propagation(gare_id)
         self.set_list_to_sec(start_time)
         self._stops.reset_index(inplace=True)
         
@@ -78,7 +74,7 @@ class TrainGraph:
         #trie sur la gare_id et l'heure
         index = ( 
                     (self.df_stops_times['stop_id'] == gare_id) &
-                    (self.df_stops_times['departure_time'].apply(lambda x: datetime.fromisoformat(x)) > start_time) 
+                    (self.df_stops_times['departure_time'].apply(lambda x: datetime.fromisoformat(x).time()) > start_time.time()) 
                 )
         indices = self.df_stops_times[index].index.tolist()
         indice_next_stations = []
