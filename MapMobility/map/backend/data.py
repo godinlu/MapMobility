@@ -67,7 +67,7 @@ class Data:
             return json.load(json_file) 
 
     
-    def create_grid_AURA(self, length:int = 1000, height:int = 800) -> None:
+    def create_grid_AURA(self, length:int = 600, height:int = 400) -> None:
         lng_arr = np.linspace(self._region_aura.bounds.min()['minx'],self._region_aura.bounds.min()['maxx'],length)
         lat_arr = np.linspace(self._region_aura.bounds.min()['miny'],self._region_aura.bounds.min()['maxy'],height)
 
