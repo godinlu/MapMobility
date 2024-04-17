@@ -1,5 +1,7 @@
 from math import radians, tan, log, pi, cos, sin
 import math
+from shapely.geometry import Point
+import geopandas as gpd
 
 def haversine_distance(lat1, lon1, lat2, lon2):
     """
@@ -39,19 +41,26 @@ def heures_en_secondes(heure_str:str, sep:str=':')->int:
     heures, minutes, secondes = map(int, heure_str.split(sep))
     return heures * 3600 + minutes * 60 + secondes
 
-def get_bike_time_between(location1, location2)->int:
+def get_bike_time_between(location1, location2,grid,avg_weights_grid)->int:
         """
         cette fonction prend 2 point sur la carte un point est représenté en [lattitude, longitude]
         puis renvoie le temps en minute du trajet à vélo.
         La fonction ne prend pas en compte les routes ou le dénivelé
         """
-        #on calcul la distance en mettres
-        x1, y1 = location1[0]*111000, location1[1]*80000
-        x2, y2 = location2[0]*111000, location2[1]*80000
-        metres = math.sqrt((x1-x2)**2 + (y1-y2)**2)
-
-        #ensuite on calcul le temps en prenant 15km/h
-        return ((metres/1000) / 15 ) * 60 * 60
+        case1,case2=test_case_grille(location1,location2,grid,avg_weights_grid)
+        chemin = chemin_test(case1,case2)
+        # Initialiser une liste pour stocker les vitesses de chaque case
+        vitesses = []
+        # Calculer la vitesse de chaque case dans le chemin
+        for case in chemin:
+            x, y = case
+            vitesse = avg_weights_grid[x][y]  # Récupérer la vitesse de la case depuis avg_weights_grid
+            vitesses.append(vitesse)
+        # Calculer la vitesse moyenne
+        vitesse_moyenne = sum(vitesses) / len(vitesses) if vitesses else 0
+        dist = haversine_distance(location1[0],location1[1],location2[0],location2[1])
+        time_s = dist/1000 / vitesse_moyenne*3600
+        return time_s
 
 def get_bike_time(distance:float)->int:
      """
@@ -98,3 +107,48 @@ def get_neighbors_indices(idx, i, j):
             neighbors.append(new_row * j + new_col)
     
     return neighbors
+
+def chemin_test(case_1, case_2):
+    chemin = []
+    
+    # Extraire les coordonnées de chaque case
+    x1, y1 = case_1
+    x2, y2 = case_2
+
+    while x1 != x2 or y1 != y2:
+        # Ajouter la case actuelle au chemin
+        chemin.append((x1, y1))
+        # Déplacer vers la prochaine case
+        if x1 < x2:
+            x1 += 1
+        elif x1 > x2:
+            x1 -= 1
+        
+        if y1 < y2:
+            y1 += 1
+        elif y1 > y2:
+            y1 -= 1
+    
+    # Ajouter la dernière case au chemin
+    chemin.append((x2, y2))
+    
+    return chemin
+
+def test_case_grille(location_1, location_2,grid,avg_weights_grid):
+     # Créer des Points à partir des coordonnées
+    point_1 = Point(location_1[0], location_1[1])
+    point_2 = Point(location_2[0], location_2[1])
+
+    # Trouver la case correspondante pour location_1
+    for i, row in grid.iterrows():
+        if row['geometry'].contains(point_1):
+            case_location_1 = (i // len(avg_weights_grid), i % len(avg_weights_grid))
+            break
+
+    # Trouver la case correspondante pour location_2
+    for i, row in grid.iterrows():
+        if row['geometry'].contains(point_2):
+            case_location_2 = (i // len(avg_weights_grid), i % len(avg_weights_grid))
+            break
+
+    return case_location_1,case_location_2

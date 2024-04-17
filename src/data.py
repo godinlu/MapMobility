@@ -9,6 +9,7 @@ import numpy as np
 import geopandas as gpd
 from tqdm import tqdm
 import os
+import time
 
 
 class Data:
@@ -87,13 +88,15 @@ class Data:
         # Calculer les limites du GeoDataFrame
         minx, miny, maxx, maxy = self._region_aura.total_bounds
         # Définir les dimensions du quadrillage
-        n_rows = 5
-        n_cols = 5
+        n_rows = 4
+        n_cols = 4
         a = (maxx - minx) / n_cols  # Latitude
         b = (maxy - miny) / n_rows  # Longitude
         # Créer un GeoDataFrame pour le quadrillage
         grid = gpd.GeoDataFrame(geometry=gpd.GeoSeries([box(minx + i*a, miny + j*b, minx + (i+1)*a, miny + (j+1)*b) 
-                                                        for j in range(n_rows) for i in range(n_cols)]))        
+                                                        for j in range(n_rows) for i in range(n_cols)]))
+        # Écrire le GeoDataFrame dans un fichier GeoJSON
+        grid.to_file("grid.geojson", driver='GeoJSON')   
         # Initialiser une nouvelle colonne 'in_AURA' avec des valeurs par défaut à 0
         grid['in_AURA'] = 0
         # Filtrer les cellules du quadrillage qui intersectent la région AURA
@@ -168,13 +171,14 @@ class Data:
             
             start_point = [grid_coords[start_row][start_col][1], grid_coords[start_row][start_col][0]]  # Inverser la latitude et la longitude pour le point de départ
             end_point = [grid_coords[end_row][end_col][1], grid_coords[end_row][end_col][0]]  # Inverser la latitude et la longitude pour le point d'arrivée
-            print(start_point,end_point)
+            #print(start_point,end_point)
             # Préparer le corps de la requête API
             body = {
                 "coordinates": [
                     [start_point[1], start_point[0]],  # Inverser la latitude et la longitude
                     [end_point[1], end_point[0]]  # Inverser la latitude et la longitude
-                ]
+                ],
+                "radiuses": [-1, -1]
             }
             #print(body['coordinates'])
             headers = {
@@ -197,9 +201,33 @@ class Data:
                 nb_err = nb_err +1
             # Ajouter l'arête avec le poids de la durée
             G.add_edge(start_point_idx, end_point_idx, weight=fly_speed)
-        return G
+            time.sleep(3)
 
+        #print(grid_coords)
+        avg_weights = {}
 
+        # Initialiser un tableau 2D pour stocker les poids moyens
+        avg_weights_grid = [[0 for _ in range(n_cols)] for _ in range(n_rows)]
+
+        # Calculer les poids moyens pour chaque nœud
+        for node in G.nodes():
+            row, col = idx_to_row_col(node, n_cols)  # Fonction pour convertir l'indice du nœud en coordonnées de grille
+            edges = G.edges(node, data=True)
+            total_weight = sum(data['weight'] for _, _, data in edges)
+            avg_weight = total_weight / len(edges) if edges else 0
+            avg_weights_grid[row][col] = avg_weight
+
+        print(avg_weights_grid)
+        return avg_weights_grid, grid
+
+    def get_gridJSON(self)->None:
+        grid = gpd.read_file("grid.geojson")
+        return grid
+    
+    def get_grid_speed(self)->None:
+        avg_weights_grid = [[10.092616066979613, 10.476209294078291, 9.778923542833308, 8.286900602229379], [11.244415149705063, 11.058794942496577, 11.278026443196971, 9.576001057793167], [12.226179350515363, 12.274017182368295, 12.043370797514807, 10.512047660392026], [12.054577332607922, 11.93362674488364, 12.08730510837238, 9.532611689462675]]
+        return avg_weights_grid
+    
     def get_stops(self) -> pd.DataFrame:
         return self._stops
     
