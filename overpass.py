@@ -11,7 +11,7 @@ coor_Saint_elouen_mine = [2.7618,46.0927]
 body = {
     "coordinates": [
         coor_massif_centrale,
-        coor_Saint_elouen_mine
+        coor_gre
     ]
 }
 
@@ -33,6 +33,6 @@ data = json.loads(response)
 duration = data['routes'][0]['summary']['duration']
 
 
-distance_app = haversine_distance(46.0927,2.7618,45.4800,2.9083)
+distance_app = haversine_distance(46.0927,2.7618,45.7690,4.8343)
 
-print("vitesse à vol d'oiseau du trajet :", distance_app/duration, "en metres par seconde")
+print("vitesse à vol d'oiseau du trajet :", duration, "en seconde")

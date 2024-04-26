@@ -18,6 +18,7 @@ class TimeGrid:
 
     def create_station_dist(self) -> None:
         stops_2D = self._stops.apply(lambda row:meters_projection(row['stop_lon'], row['stop_lat']), axis=1).to_list()
+        
         #print(stops_2D)
         # points_gares = list(  zip(self._stops['stop_lat'], self._stops['stop_lon']))
         # print(points_gares)
