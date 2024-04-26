@@ -56,8 +56,8 @@ class StopTimesManager:
                 self.days_score[weekday] = group.shape[0]
 
     def preprocess_data(self, df:pd.DataFrame):
-        region_aura = gpd.read_file("data/region-auvergne-rhone-alpes.geojson")
-        stops = pd.read_csv("data/stops.txt")
+        region_aura = gpd.read_file("map/data/region-auvergne-rhone-alpes.geojson")
+        stops = pd.read_csv("map/data/stops.txt")
         stops = stops[stops['stop_id'].str.contains('Train')]
         gdf_stops = gpd.GeoDataFrame(stops, geometry=gpd.points_from_xy(stops['stop_lon'], stops['stop_lat']))
         mask = gdf_stops.within(region_aura.geometry.unary_union)
